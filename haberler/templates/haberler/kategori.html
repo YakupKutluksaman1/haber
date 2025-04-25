@@ -1,0 +1,96 @@
+{% extends 'haberler/base.html' %}
+
+{% block title %}{{ kategori }} Haberleri - Haber Portalı{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <h2>{{ kategori }} Haberleri</h2>
+        <p class="text-muted">
+            {{ kategori }} kategorisindeki haberler ({{ haberler.paginator.count }} sonuç)
+        </p>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    {% for haber in haberler %}
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 hover-card">
+            {% if haber.resim %}
+            <img src="{{ haber.resim.url }}" class="card-img-top" alt="{{ haber.baslik }}"
+                style="height: 200px; object-fit: cover;">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">
+                    <a href="{% url 'haber_detay' haber_id=haber.id %}" class="text-decoration-none text-dark">
+                        {{ haber.baslik }}
+                    </a>
+                </h5>
+                <p class="card-text">{{ haber.icerik|truncatewords:30 }}</p>
+                <p class="text-muted">
+                    <small>
+                        <i class="bi bi-person"></i> {{ haber.yazar }} |
+                        <i class="bi bi-calendar"></i> {{ haber.yayin_tarihi|date:"d F Y" }}
+                    </small>
+                </p>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{% url 'haber_detay' haber_id=haber.id %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-arrow-right"></i> Devamını Oku
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            {{ kategori }} kategorisinde henüz haber bulunmamaktadır.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if haberler.paginator.num_pages > 1 %}
+<div class="row mt-4">
+    <div class="col-12">
+        <nav aria-label="Sayfalama">
+            <ul class="pagination justify-content-center">
+                {% if haberler.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?sayfa={{ haberler.previous_page_number }}" aria-label="Önceki">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in haberler.paginator.page_range %}
+                <li class="page-item {% if num == haberler.number %}active{% endif %}">
+                    <a class="page-link" href="?sayfa={{ num }}">{{ num }}</a>
+                </li>
+                {% endfor %}
+
+                {% if haberler.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?sayfa={{ haberler.next_page_number }}" aria-label="Sonraki">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endif %}
+
+<style>
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}

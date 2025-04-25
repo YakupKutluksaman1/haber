@@ -1,0 +1,205 @@
+{% extends 'haberler/base.html' %}
+
+{% block title %}{{ haber.baslik }} - Haber Portalı{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Ana İçerik -->
+    <div class="col-lg-8">
+        <article>
+            <h1 class="mb-4 display-4 display-md-3 display-lg-2">{{ haber.baslik }}</h1>
+
+            <!-- Haber Özeti -->
+            <div class="news-summary mb-4 p-3 bg-light rounded">
+                <p class="lead mb-0">{{ haber.ozet|default:haber.icerik|truncatewords:30 }}</p>
+            </div>
+
+            <div
+                class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+                <div class="text-muted mb-2 mb-md-0">
+                    <small>
+                        <i class="bi bi-person"></i> Yazar: {{ haber.yazar }} |
+                        <i class="bi bi-folder"></i> Kategori: {{ haber.kategori }} |
+                        <i class="bi bi-clock"></i> {{ haber.yayin_tarihi|date:"d F Y" }}
+                    </small>
+                </div>
+                <div class="d-flex gap-2">
+                    <!-- Paylaşım Butonları -->
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="shareOnFacebook()">
+                            <i class="bi bi-facebook"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="shareOnTwitter()">
+                            <i class="bi bi-twitter"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="shareOnWhatsApp()">
+                            <i class="bi bi-whatsapp"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="copyLink()">
+                            <i class="bi bi-link-45deg"></i>
+                        </button>
+                    </div>
+                    <a href="{% url 'kategori_haberleri' kategori_slug=haber.kategori.slug %}"
+                        class="btn btn-sm btn-outline-danger">
+                        Kategoriye Git
+                    </a>
+                </div>
+            </div>
+
+            {% if haber.resim %}
+            <div class="ratio ratio-16x9 mb-4">
+                <img src="{{ haber.resim.url }}" class="img-fluid rounded object-fit-cover" alt="{{ haber.baslik }}">
+            </div>
+            {% endif %}
+
+            <div class="content mb-5 fs-5 fs-md-4">
+                {{ haber.icerik|linebreaks }}
+            </div>
+
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                <div class="text-muted mb-2 mb-md-0">
+                    <small>
+                        Son Güncelleme: {{ haber.guncelleme_tarihi|date:"d F Y H:i" }}
+                    </small>
+                </div>
+                <div>
+                    <a href="{% url 'ana_sayfa' %}" class="btn btn-outline-danger">
+                        <i class="bi bi-arrow-left"></i> Ana Sayfaya Dön
+                    </a>
+                </div>
+            </div>
+        </article>
+    </div>
+
+    <!-- Yan Panel -->
+    <div class="col-lg-4 mt-4 mt-lg-0">
+        <!-- Benzer Haberler -->
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Benzer Haberler</h5>
+            </div>
+            <div class="card-body">
+                {% if benzer_haberler %}
+                {% for benzer in benzer_haberler %}
+                <div class="mb-3">
+                    {% if benzer.resim %}
+                    <img src="{{ benzer.resim.url }}" class="img-fluid rounded mb-2" alt="{{ benzer.baslik }}"
+                        style="height: 100px; width: 100%; object-fit: cover;">
+                    {% endif %}
+                    <h6 class="card-title">
+                        <a href="{% url 'haber_detay' haber_slug=benzer.slug %}"
+                            class="text-decoration-none text-danger">
+                            {{ benzer.baslik }}
+                        </a>
+                    </h6>
+                    <p class="card-text small text-muted">
+                        {{ benzer.yayin_tarihi|date:"d F Y" }}
+                    </p>
+                </div>
+                {% if not forloop.last %}
+                <hr>
+                {% endif %}
+                {% endfor %}
+                {% else %}
+                <p class="text-muted">Bu kategoride başka haber bulunmamaktadır.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- En Çok Okunan Haberler -->
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">En Çok Okunanlar</h5>
+            </div>
+            <div class="card-body">
+                {% if en_cok_okunanlar %}
+                {% for haber in en_cok_okunanlar %}
+                <div class="mb-3">
+                    {% if haber.resim %}
+                    <img src="{{ haber.resim.url }}" class="img-fluid rounded mb-2" alt="{{ haber.baslik }}"
+                        style="height: 100px; width: 100%; object-fit: cover;">
+                    {% endif %}
+                    <h6 class="card-title">
+                        <a href="{% url 'haber_detay' haber_slug=haber.slug %}"
+                            class="text-decoration-none text-danger">
+                            {{ haber.baslik }}
+                        </a>
+                    </h6>
+                    <p class="card-text small text-muted">
+                        <i class="bi bi-eye"></i> {{ haber.goruntulenme_sayisi }} okunma
+                    </p>
+                </div>
+                {% if not forloop.last %}
+                <hr>
+                {% endif %}
+                {% endfor %}
+                {% else %}
+                <p class="text-muted">Henüz okunma verisi bulunmamaktadır.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Son Yorumlar -->
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Son Yorumlar</h5>
+            </div>
+            <div class="card-body">
+                {% if son_yorumlar %}
+                {% for yorum in son_yorumlar %}
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <img src="{{ yorum.yazar.profile.resim.url|default:'/static/images/default-avatar.png' }}"
+                            class="rounded-circle me-2" alt="{{ yorum.yazar.username }}"
+                            style="width: 32px; height: 32px; object-fit: cover;">
+                        <div>
+                            <strong class="text-danger">{{ yorum.yazar.username }}</strong>
+                            <small class="text-muted d-block">{{ yorum.olusturulma_tarihi|date:"d F Y H:i" }}</small>
+                        </div>
+                    </div>
+                    <p class="mb-0">{{ yorum.icerik|truncatewords:20 }}</p>
+                </div>
+                {% if not forloop.last %}
+                <hr>
+                {% endif %}
+                {% endfor %}
+                {% else %}
+                <p class="text-muted">Henüz yorum yapılmamış.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Paylaşım fonksiyonları
+    function shareOnFacebook() {
+        const url = encodeURIComponent(window.location.href);
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+    }
+
+    function shareOnTwitter() {
+        const url = encodeURIComponent(window.location.href);
+        const title = encodeURIComponent(document.title);
+        window.open(`https://twitter.com/intent/tweet?url=${url}&text=${title}`, '_blank');
+    }
+
+    function shareOnWhatsApp() {
+        const url = encodeURIComponent(window.location.href);
+        const title = encodeURIComponent(document.title);
+        window.open(`https://wa.me/?text=${title}%20${url}`, '_blank');
+    }
+
+    function copyLink() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Link kopyalandı!');
+        }).catch(err => {
+            console.error('Link kopyalanırken hata oluştu:', err);
+        });
+    }
+</script>
+{% endblock %}
