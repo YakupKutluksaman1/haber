@@ -1,0 +1,159 @@
+{% extends 'haberler/base.html' %}
+
+{% block title %}{{ ilan.firma_adi }} - Firma Bilgileri{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Firma Detayları -->
+        <div class="col-lg-8">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-danger text-white py-3">
+                    <div class="d-flex align-items-center">
+                        <h1 class="card-title mb-0 h3">{{ ilan.firma_adi }}</h1>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Firma Görseli -->
+                    {% if ilan.logo %}
+                    <div class="text-center mb-4">
+                        <img src="{{ ilan.logo.url }}" alt="{{ ilan.firma_adi }}" class="img-fluid rounded"
+                            style="max-height: 300px;">
+                    </div>
+                    {% endif %}
+
+                    <!-- Faaliyet Alanı -->
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2"><i class="bi bi-briefcase-fill text-danger me-2"></i>Faaliyet
+                            Alanı</h5>
+                        <p>{{ ilan.faaliyet_alani }}</p>
+                    </div>
+
+                    <!-- İçerik -->
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2"><i class="bi bi-info-circle-fill text-danger me-2"></i>Firma
+                            Hakkında</h5>
+                        <div class="ilan-content">
+                            {{ ilan.aciklama|linebreaks }}
+                        </div>
+                    </div>
+
+                    <!-- İletişim Bilgileri -->
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2"><i class="bi bi-telephone-fill text-danger me-2"></i>İletişim
+                            Bilgileri</h5>
+                        <div class="row my-3">
+                            <div class="col-md-6">
+                                <div class="d-flex mb-3">
+                                    <div class="flex-shrink-0">
+                                        <i class="bi bi-geo-alt-fill text-danger me-2 fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Adres:</strong><br>
+                                        {{ ilan.adres|linebreaks }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex mb-3">
+                                    <div class="flex-shrink-0">
+                                        <i class="bi bi-telephone-fill text-danger me-2 fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Telefon:</strong><br>
+                                        {{ ilan.telefon }}
+                                    </div>
+                                </div>
+
+                                {% if ilan.email %}
+                                <div class="d-flex mb-3">
+                                    <div class="flex-shrink-0">
+                                        <i class="bi bi-envelope-fill text-danger me-2 fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <strong>E-posta:</strong><br>
+                                        <a href="mailto:{{ ilan.email }}">{{ ilan.email }}</a>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {% if ilan.website %}
+                                <div class="d-flex mb-3">
+                                    <div class="flex-shrink-0">
+                                        <i class="bi bi-globe text-danger me-2 fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <strong>Web Sitesi:</strong><br>
+                                        <a href="{{ ilan.website }}" target="_blank">{{ ilan.website }}</a>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer text-center text-muted py-3">
+                    <small>Son güncelleme: {{ ilan.guncelleme_tarihi|date:"d F Y, H:i" }}</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ Sidebar -->
+        <div class="col-lg-4">
+            <!-- Diğer İlanlar -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0 h6">Diğer Firmalar</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for diger in diger_ilanlar %}
+                        <li class="list-group-item py-3">
+                            <div class="d-flex">
+                                {% if diger.logo %}
+                                <div class="flex-shrink-0 me-3">
+                                    <img src="{{ diger.logo.url }}" alt="{{ diger.firma_adi }}"
+                                        style="width: 60px; height: 60px; object-fit: contain;">
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <h6 class="mb-1">
+                                        <a href="{% url 'ilan_detay' ilan_slug=diger.slug %}"
+                                            class="text-decoration-none">
+                                            {{ diger.firma_adi }}
+                                        </a>
+                                    </h6>
+                                    <small class="text-muted d-block mb-1">{{ diger.faaliyet_alani }}</small>
+                                    <small><i class="bi bi-geo-alt me-1"></i>{{ diger.adres|truncatewords:3 }}</small>
+                                </div>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item py-3">
+                            <p class="mb-0 text-muted">Başka firma ilanı bulunmamaktadır.</p>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Reklam Alanı veya Öne Çıkan Haberler -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0 h6">Öne Çıkan Haberler</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Buraya öne çıkan haberler eklenebilir -->
+                    <p class="mb-0 text-muted">Bu bölümde öne çıkan haberler listelenebilir.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .ilan-content {
+        line-height: 1.7;
+    }
+</style>
+{% endblock %}

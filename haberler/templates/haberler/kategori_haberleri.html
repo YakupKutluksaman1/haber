@@ -1,0 +1,635 @@
+{% extends 'haberler/base.html' %}
+
+{% block title %}{{ kategori }} Haberleri - Haber Portalı{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Kategori Başlık Bölümü -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="category-header p-4 bg-light rounded">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-{{ kategori.icon|default:'newspaper' }} fs-1 text-primary me-3"
+                        style="color: #011e5a !important;"></i>
+                    <div>
+                        <h1 class="display-6 mb-1">{{ kategori }} Haberleri</h1>
+                        <p class="text-muted mb-0">{{ kategori.aciklama|default:'' }}</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-3 text-muted">
+                    <small><i class="bi bi-clock"></i> Son Güncelleme: {{ son_guncelleme|date:"d F Y H:i" }}</small>
+                    <small><i class="bi bi-file-text"></i> Toplam {{ haberler.paginator.count }} Haber</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Son 10 Haber Slider -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-primary fw-bold" style="color: #011e5a !important;">
+                            <i class="bi bi-lightning-charge-fill me-2"></i>Son Gelişmeler
+                        </h5>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="news-slider">
+                        <div class="row g-0">
+                            <div class="col-md-4 border-end">
+                                <div class="news-list custom-scrollbar">
+                                    {% for haber in haberler|slice:":10" %}
+                                    <div class="news-list-item {% if forloop.first %}active{% endif %}"
+                                        data-index="{{ forloop.counter0 }}">
+                                        <a href="{% url 'haber_detay' haber_slug=haber.slug %}"
+                                            class="text-decoration-none text-dark">
+                                            <div class="d-flex align-items-center">
+                                                <div class="news-number">{{ forloop.counter }}</div>
+                                                <div class="news-content">
+                                                    <h6 class="mb-1">{{ haber.baslik }}</h6>
+                                                    <small class="text-muted">
+                                                        <i class="bi bi-clock me-1"></i>
+                                                        {{ haber.yayin_tarihi|date:"H:i" }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="featured-news">
+                                    {% for haber in haberler|slice:":10" %}
+                                    <div class="featured-news-item {% if forloop.first %}active{% endif %}"
+                                        id="featured-{{ forloop.counter0 }}">
+                                        <a href="{% url 'haber_detay' haber_slug=haber.slug %}"
+                                            class="text-decoration-none">
+                                            <div class="position-relative">
+                                                {% if haber.resim %}
+                                                <img src="{{ haber.resim.url }}" class="img-fluid w-100"
+                                                    alt="{{ haber.baslik }}" style="height: 450px; object-fit: cover;">
+                                                {% endif %}
+                                                <!-- Navigasyon Butonları -->
+                                                <div class="slider-controls">
+                                                    <button class="nav-btn prev-btn" id="prevSlide"
+                                                        onclick="event.preventDefault(); prevSlide();">
+                                                        <i class="bi bi-chevron-left"></i>
+                                                    </button>
+                                                    <button class="nav-btn next-btn" id="nextSlide"
+                                                        onclick="event.preventDefault(); nextSlide();">
+                                                        <i class="bi bi-chevron-right"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="featured-news-overlay">
+                                                    <div class="overlay-content">
+                                                        <div class="d-flex flex-column h-100">
+                                                            <div class="mb-auto">
+                                                                {% if haber.kategori %}
+                                                                <span class="badge mb-3 px-3 py-2"
+                                                                    style="background-color: #011e5a;">
+                                                                    {{ haber.kategori.ad }}
+                                                                </span>
+                                                                {% endif %}
+
+                                                                <h2 class="featured-news-title mb-3">{{ haber.baslik }}
+                                                                </h2>
+
+                                                                <div
+                                                                    class="featured-news-excerpt d-none d-md-block mb-4">
+                                                                    {% if haber.ozet %}
+                                                                    {{ haber.ozet|truncatewords:30 }}
+                                                                    {% else %}
+                                                                    {{ haber.icerik|truncatewords:30 }}
+                                                                    {% endif %}
+                                                                </div>
+                                                            </div>
+                                                            <div class="featured-news-meta">
+                                                                <div class="d-flex align-items-center gap-4">
+                                                                    <span>
+                                                                        <i class="bi bi-eye me-2"></i>
+                                                                        {{ haber.goruntulenme_sayisi }} görüntülenme
+                                                                    </span>
+                                                                    <span>
+                                                                        <i class="bi bi-calendar me-2"></i>
+                                                                        {{ haber.yayin_tarihi|date:"d F Y" }}
+                                                                    </span>
+                                                                    <span>
+                                                                        <i class="bi bi-clock me-2"></i>
+                                                                        {{ haber.yayin_tarihi|date:"H:i" }}
+                                                                    </span>
+                                                                </div>
+                                                                <div class="mt-3">
+                                                                    <span class="read-more-btn">
+                                                                        Devamını Oku <i
+                                                                            class="bi bi-arrow-right ms-2"></i>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtreleme ve Sıralama -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6 mb-2 mb-md-0">
+                            <div class="d-flex gap-2">
+                                <select class="form-select form-select-sm" id="sortSelect">
+                                    <option value="newest">En Yeni</option>
+                                    <option value="popular">En Popüler</option>
+                                    <option value="most_viewed">En Çok Okunan</option>
+                                </select>
+                                <select class="form-select form-select-sm" id="dateFilter">
+                                    <option value="all">Tüm Zamanlar</option>
+                                    <option value="today">Bugün</option>
+                                    <option value="week">Bu Hafta</option>
+                                    <option value="month">Bu Ay</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-sm" placeholder="Haber ara...">
+                                <button class="btn btn-sm btn-primary" type="button"
+                                    style="background-color: #011e5a; border-color: #011e5a;">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Haber Listesi -->
+    <div class="row">
+        {% for haber in haberler %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 news-card">
+                {% if haber.resim %}
+                <div class="position-relative">
+                    <img src="{{ haber.resim.url }}" class="card-img-top" alt="{{ haber.baslik }}"
+                        style="height: 200px; object-fit: cover;">
+                    {% if forloop.first %}
+                    <span class="position-absolute top-0 start-0 badge m-2" style="background-color: #011e5a;">
+                        <i class="bi bi-star-fill"></i> Öne Çıkan
+                    </span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge" style="background-color: #011e5a;">{{ haber.kategori.ad }}</span>
+                        <small class="text-muted">
+                            <i class="bi bi-clock"></i> {{ haber.yayin_tarihi|date:"d F Y" }}
+                        </small>
+                    </div>
+                    <h5 class="card-title">{{ haber.baslik }}</h5>
+                    <p class="card-text">{{ haber.ozet|default:haber.icerik|truncatewords:20 }}</p>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="text-muted">
+                            <small>
+                                <i class="bi bi-eye"></i> {{ haber.goruntulenme_sayisi }}
+                            </small>
+                        </div>
+                        <small class="text-muted">
+                            <i class="bi bi-person"></i> {{ haber.yazar.get_full_name|default:haber.yazar.username }}
+                        </small>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{% url 'haber_detay' haber_slug=haber.slug %}" class="btn btn-sm btn-outline-primary w-100"
+                        style="color: #011e5a; border-color: #011e5a;">
+                        Devamını Oku
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Sayfalama -->
+    {% if haberler.paginator.num_pages > 1 %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <nav aria-label="Sayfalama">
+                <ul class="pagination justify-content-center">
+                    {% if haberler.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?sayfa={{ haberler.previous_page_number }}" aria-label="Önceki">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in haberler.paginator.page_range %}
+                    <li class="page-item {% if num == haberler.number %}active{% endif %}">
+                        <a class="page-link" href="?sayfa={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endfor %}
+
+                    {% if haberler.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?sayfa={{ haberler.next_page_number }}" aria-label="Sonraki">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .news-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .news-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .category-header {
+        background: linear-gradient(to right, #f8f9fa, #fff);
+        border-left: 5px solid #011e5a;
+    }
+
+    .card-img-top {
+        transition: transform 0.3s ease;
+    }
+
+    .news-card:hover .card-img-top {
+        transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+        .category-header {
+            padding: 1rem !important;
+        }
+
+        .display-6 {
+            font-size: 1.5rem;
+        }
+    }
+
+    .news-slider {
+        position: relative;
+        overflow: hidden;
+        background-color: #fff;
+    }
+
+    .news-list {
+        height: 450px;
+        overflow-y: auto;
+        background-color: #fff;
+    }
+
+    .news-list-item {
+        padding: 15px;
+        border-bottom: 1px solid #f2f2f2;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .news-list-item:hover,
+    .news-list-item.active {
+        background-color: #f5f5f5;
+    }
+
+    .news-list-item.active {
+        border-left: 3px solid #011e5a;
+    }
+
+    .news-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #011e5a;
+        margin-right: 10px;
+        min-width: 28px;
+    }
+
+    .news-content h6 {
+        font-size: 14px;
+        line-height: 1.4;
+        margin-bottom: 5px;
+        color: #333;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #dc3545;
+        border-radius: 3px;
+    }
+
+    .featured-news {
+        position: relative;
+        height: 450px;
+    }
+
+    .featured-news-item {
+        display: none;
+        position: relative;
+        height: 100%;
+    }
+
+    .featured-news-item.active {
+        display: block;
+    }
+
+    .featured-news-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        background: linear-gradient(to top,
+                rgba(0, 0, 0, 0.95) 0%,
+                rgba(0, 0, 0, 0.8) 40%,
+                rgba(0, 0, 0, 0.4) 80%,
+                transparent 100%);
+        padding: 2rem;
+        color: white;
+        transition: all 0.3s ease;
+    }
+
+    .featured-news-item:hover .featured-news-overlay {
+        background: linear-gradient(to top,
+                rgba(0, 0, 0, 0.98) 0%,
+                rgba(0, 0, 0, 0.85) 40%,
+                rgba(0, 0, 0, 0.5) 80%,
+                rgba(0, 0, 0, 0.2) 100%);
+    }
+
+    .overlay-content {
+        height: 100%;
+    }
+
+    .featured-news-title {
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1.3;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .featured-news-excerpt {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        opacity: 0.9;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+    .featured-news-meta {
+        font-size: 0.95rem;
+        opacity: 0.9;
+    }
+
+    .featured-news-meta span {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .read-more-btn {
+        display: inline-flex;
+        align-items: center;
+        color: #fff;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        background-color: #011e5a;
+        border-radius: 25px;
+        transition: all 0.3s ease;
+    }
+
+    .read-more-btn:hover {
+        background-color: #0a3d8f;
+        transform: translateX(5px);
+    }
+
+    .slider-controls {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        transform: translateY(-50%);
+        z-index: 10;
+        pointer-events: none;
+        padding: 0 20px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .nav-btn {
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        color: #011e5a;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        pointer-events: auto;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .nav-btn:hover {
+        background: #011e5a;
+        color: white;
+        transform: scale(1.1);
+    }
+
+    .nav-btn:focus {
+        outline: none;
+    }
+
+    .prev-btn {
+        padding-right: 3px;
+    }
+
+    .next-btn {
+        padding-left: 3px;
+    }
+
+    @media (max-width: 768px) {
+        .nav-btn {
+            width: 35px;
+            height: 35px;
+            font-size: 1.2rem;
+        }
+
+        .featured-news-overlay {
+            padding: 1.5rem;
+        }
+
+        .featured-news-title {
+            font-size: 1.5rem;
+        }
+
+        .featured-news-excerpt {
+            font-size: 1rem;
+        }
+
+        .featured-news-meta {
+            font-size: 0.85rem;
+        }
+    }
+
+    .page-item.active .page-link {
+        background-color: #011e5a;
+        border-color: #011e5a;
+    }
+
+    .page-link {
+        color: #011e5a;
+    }
+
+    .page-link:hover {
+        color: #0a3d8f;
+    }
+
+    .card-title a:hover {
+        color: #011e5a;
+    }
+</style>
+
+{% block extra_js %}
+<script>
+    // Sıralama ve filtreleme işlevselliği
+    document.getElementById('sortSelect').addEventListener('change', function () {
+        // Sıralama işlemi
+        const sortValue = this.value;
+        // URL'yi güncelle ve sayfayı yenile
+        window.location.href = updateQueryStringParameter(window.location.href, 'siralama', sortValue);
+    });
+
+    document.getElementById('dateFilter').addEventListener('change', function () {
+        // Filtreleme işlemi
+        const filterValue = this.value;
+        // URL'yi güncelle ve sayfayı yenile
+        window.location.href = updateQueryStringParameter(window.location.href, 'tarih', filterValue);
+    });
+
+    function updateQueryStringParameter(uri, key, value) {
+        const re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
+        const separator = uri.indexOf('?') !== -1 ? "&" : "?";
+        if (uri.match(re)) {
+            return uri.replace(re, '$1' + key + "=" + value + '$2');
+        } else {
+            return uri + separator + key + "=" + value;
+        }
+    }
+
+    // Lazy loading için Intersection Observer
+    const lazyImages = document.querySelectorAll('img[loading="lazy"]');
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                img.src = img.dataset.src;
+                img.classList.remove('lazy');
+                observer.unobserve(img);
+            }
+        });
+    });
+
+    lazyImages.forEach(img => imageObserver.observe(img));
+
+    // Slider işlevselliği
+    document.addEventListener('DOMContentLoaded', function () {
+        // Haber listesi ve slider kontrolü
+        const newsItems = document.querySelectorAll('.news-list-item');
+        const featuredItems = document.querySelectorAll('.featured-news-item');
+        let currentIndex = 0;
+        const totalItems = newsItems.length;
+
+        function updateNewsDisplay(index) {
+            newsItems.forEach(item => item.classList.remove('active'));
+            featuredItems.forEach(item => item.classList.remove('active'));
+
+            newsItems[index].classList.add('active');
+            featuredItems[index].classList.add('active');
+        }
+
+        function autoSlide() {
+            currentIndex = (currentIndex + 1) % totalItems;
+            updateNewsDisplay(currentIndex);
+        }
+
+        let slideInterval = setInterval(autoSlide, 3000);
+
+        const sliderContainer = document.querySelector('.featured-news');
+        const newsListContainer = document.querySelector('.news-list');
+
+        [sliderContainer, newsListContainer].forEach(container => {
+            container.addEventListener('mouseenter', () => {
+                clearInterval(slideInterval);
+            });
+
+            container.addEventListener('mouseleave', () => {
+                slideInterval = setInterval(autoSlide, 3000);
+            });
+        });
+
+        newsItems.forEach((item, index) => {
+            item.addEventListener('click', function () {
+                currentIndex = index;
+                updateNewsDisplay(currentIndex);
+            });
+        });
+
+        // Yön tuşları için fonksiyonlar
+        window.prevSlide = function () {
+            currentIndex = (currentIndex - 1 + totalItems) % totalItems;
+            updateNewsDisplay(currentIndex);
+        }
+
+        window.nextSlide = function () {
+            currentIndex = (currentIndex + 1) % totalItems;
+            updateNewsDisplay(currentIndex);
+        }
+
+        // Butonlara tıklandığında habere yönlendirmeyi engelle
+        document.querySelector('.slider-controls').addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        updateNewsDisplay(0);
+    });
+</script>
+{% endblock %}
+{% endblock %}

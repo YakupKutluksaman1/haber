@@ -1,0 +1,163 @@
+{% extends 'haberler/base.html' %}
+
+{% block title %}Yayın İlkeleri - Özbel Haber{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-5">
+                    <h1 class="mb-4 text-center" style="color: #011e5a;">Yayın İlkelerimiz</h1>
+
+                    <div class="text-center mb-5">
+                        <img src="/static/images/logo.jpg" alt="Özbel Haber Logo" class="img-fluid rounded-circle"
+                            style="max-width: 150px;">
+                    </div>
+
+                    <div class="mb-4">
+                        <p class="lead text-muted">
+                            Özbel Haber olarak tüm habercilik faaliyetlerimizde aşağıdaki yayın ilkelerine bağlı
+                            kalacağımızı taahhüt ederiz.
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h5 mb-3" style="color: #011e5a;"><i
+                                class="bi bi-check-circle-fill me-2"></i>Tarafsızlık ve Bağımsızlık</h2>
+                        <ul class="text-muted">
+                            <li>Hiçbir siyasi parti, ideoloji, kişi veya kuruluşun yanında veya karşısında taraf
+                                olmadan, tüm olayları objektif bir şekilde değerlendirerek haberleştirmeyi taahhüt
+                                ederiz.</li>
+                            <li>Haber içeriklerimizde kişisel görüş ve yorumlardan kaçınır, olayları olduğu gibi
+                                aktarmayı hedefleriz.</li>
+                            <li>Habercilik faaliyetlerimizde hiçbir siyasi, ticari veya kişisel çıkar gözetmeyiz.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h5 mb-3" style="color: #011e5a;"><i class="bi bi-check-circle-fill me-2"></i>Doğruluk
+                            ve Güvenilirlik</h2>
+                        <ul class="text-muted">
+                            <li>Paylaştığımız her haberin doğruluğunu teyit etmek için birden fazla bağımsız kaynaktan
+                                doğrulama yaparız.</li>
+                            <li>Spekülatif bilgilere, asılsız iddialara ve söylentilere haberlerimizde yer vermeyiz.
+                            </li>
+                            <li>Hata yapıldığı durumlarda, en kısa sürede düzeltme yapma ve okuyucularımıza açıklama
+                                yapma sorumluluğuna sahibiz.</li>
+                            <li>Yanıltıcı başlık kullanmaz, "tıklama tuzağı" (clickbait) yöntemlerine başvurmayız.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h5 mb-3" style="color: #011e5a;"><i class="bi bi-check-circle-fill me-2"></i>Özel
+                            Hayata Saygı</h2>
+                        <ul class="text-muted">
+                            <li>Kişilerin özel hayatlarına saygı gösterir, kamu yararı olmadığı sürece özel hayatla
+                                ilgili bilgileri yayınlamayız.</li>
+                            <li>Kişisel verilerin korunmasına özen gösterir, ilgili mevzuata uygun hareket ederiz.</li>
+                            <li>İntihar, aile içi şiddet gibi hassas konuların haberleştirilmesinde özendirici ve
+                                detaylı anlatımlardan kaçınırız.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h5 mb-3" style="color: #011e5a;"><i class="bi bi-check-circle-fill me-2"></i>Adil
+                            Yargılanma Hakkına Saygı</h2>
+                        <ul class="text-muted">
+                            <li>Hukuki süreçleri devam eden konularda "suçlu" ifadesi kullanmaz, "zanlı", "şüpheli" gibi
+                                hukuki durumu doğru yansıtan terimleri kullanırız.</li>
+                            <li>Adli süreçleri etkileyebilecek yayınlardan kaçınırız.</li>
+                            <li>Masumiyet karinesine saygı gösteririz.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h5 mb-3" style="color: #011e5a;"><i class="bi bi-check-circle-fill me-2"></i>Çocuk
+                            Hakları</h2>
+                        <ul class="text-muted">
+                            <li>Çocuklarla ilgili haberlerde çocukların üstün yararını gözetiriz.</li>
+                            <li>Çocukların kimliklerini açığa çıkaracak bilgi ve görüntülere yer vermeyiz.</li>
+                            <li>Çocukları mağdur edecek, rencide edecek veya hedef gösterecek yayınlardan kaçınırız.
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h5 mb-3" style="color: #011e5a;"><i
+                                class="bi bi-check-circle-fill me-2"></i>Ayrımcılıkla Mücadele</h2>
+                        <ul class="text-muted">
+                            <li>Irk, dil, din, cinsiyet, cinsel yönelim, engel durumu veya sosyal statü temelli ayrımcı
+                                söylemlere ve nefret söylemine yer vermeyiz.</li>
+                            <li>Toplumun farklı kesimlerinin temsil edilmesine özen gösteririz.</li>
+                            <li>Dezavantajlı gruplarla ilgili haberlerde stereotipleri güçlendirmekten kaçınırız.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h5 mb-3" style="color: #011e5a;"><i class="bi bi-check-circle-fill me-2"></i>Şiddet
+                            ve Afet Haberciliği</h2>
+                        <ul class="text-muted">
+                            <li>Şiddet, suç ve afet haberlerinde sansasyonel anlatımdan, gereksiz detaylardan ve şiddeti
+                                özendirici içeriklerden kaçınırız.</li>
+                            <li>Afet haberciliğinde panik ve korku yaratmaktan uzak dururuz.</li>
+                            <li>Terör ve şiddet olaylarında teröristlerin amaçlarına hizmet edecek yayınlar yapmayız.
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h5 mb-3" style="color: #011e5a;"><i class="bi bi-check-circle-fill me-2"></i>Reklam
+                            ve Haber Ayrımı</h2>
+                        <ul class="text-muted">
+                            <li>Reklam içeriklerini haber içeriklerinden kesin çizgilerle ayırır, reklam-haber ayrımını
+                                okuyucularımızın kolayca anlayabileceği şekilde belirtiriz.</li>
+                            <li>Ticari kaygılar habercilik ilkelerimiz üzerinde etkili olmaz.</li>
+                            <li>Reklam verenler üzerinden elde edilecek gelir karşılığında, habercilik ilkelerimizden
+                                ödün vermeyiz.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h5 mb-3" style="color: #011e5a;"><i class="bi bi-check-circle-fill me-2"></i>Telif
+                            Haklarına Saygı</h2>
+                        <ul class="text-muted">
+                            <li>Başka kaynaklardan alıntı yaptığımız içeriklerde kaynak gösterme yükümlülüğüne uyarız.
+                            </li>
+                            <li>Telif hakkı sahiplerinin haklarına saygı gösterir, izinsiz içerik kullanımından
+                                kaçınırız.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h5 mb-3" style="color: #011e5a;"><i
+                                class="bi bi-check-circle-fill me-2"></i>Kamuoyunu Bilgilendirme Sorumluluğu</h2>
+                        <ul class="text-muted">
+                            <li>Kamu yararını ilgilendiren konuları haberleştirmeyi görev biliriz.</li>
+                            <li>Tüm kesimler için erişilebilir ve anlaşılabilir bir dil kullanmaya özen gösteririz.</li>
+                            <li>Dezenformasyonla mücadele eder, yanlış bilgilerin yayılmasını önlemeye çalışırız.</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-4">
+                        <h2 class="h5 mb-3" style="color: #011e5a;"><i class="bi bi-check-circle-fill me-2"></i>Basın
+                            Meslek İlkelerine Uyum</h2>
+                        <ul class="text-muted">
+                            <li>Basın Konseyi Basın Meslek İlkeleri, Uluslararası Gazeteciler Federasyonu İlkeleri ve
+                                evrensel gazetecilik ilkelerine uygun hareket ederiz.</li>
+                            <li>Hukuki sorumlulukların yanı sıra, etik sorumlulukları da gözetiriz.</li>
+                        </ul>
+                    </div>
+
+                    <div class="alert alert-primary">
+                        <p class="mb-0 text-center">
+                            Özbel Haber olarak, bu ilkeleri tüm yayıncılık faaliyetlerimizde rehber edinmeyi ve
+                            ilkelerimize aykırı her türlü içeriği yayınlamaktan kaçınmayı taahhüt ederiz.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% for haber in haberler %}
+<div class="col-md-4 mb-4">
+    <div class="news-card">
+        <a href="{% url 'haber_detay' haber_slug=haber.slug %}" class="text-decoration-none">
+            <div class="news-image">
+                {% if haber.resim %}
+                <img src="{{ haber.resim.url }}" alt="{{ haber.baslik }}" class="img-fluid">
+                {% endif %}
+            </div>
+            <div class="news-content">
+                <div class="news-meta">
+                    <span class="news-category">{% if haber.kategori %}{{ haber.kategori.ad }}{% endif %}</span>
+                    <span class="news-date">{{ haber.yayin_tarihi|date:"d F Y" }}</span>
+                </div>
+                <h3 class="news-title">{{ haber.baslik }}</h3>
+                <p class="news-excerpt">{{ haber.icerik|striptags|truncatewords:20 }}</p>
+                <div class="news-stats">
+                    <span class="news-views"><i class="fas fa-eye"></i> {{ haber.goruntulenme_sayisi }}</span>
+                    <span class="news-comments"><i class="fas fa-comment"></i>
+                        {% if haber.yorum_sayisi is not None %}
+                        {{ haber.yorum_sayisi }}
+                        {% elif haber.yorumlar.count is defined %}
+                        {{ haber.yorumlar.count }}
+                        {% else %}
+                        0
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+{% if forloop.counter|divisibleby:6 and not forloop.last %}
+<div class="col-12 mb-4 mt-2">
+    <hr
+        style="border: 0; height: 4px; background-color: #00134d; box-shadow: 0 3px 8px rgba(0, 19, 77, 0.7); margin: 15px 0;">
+</div>
+{% endif %}
+{% endfor %}

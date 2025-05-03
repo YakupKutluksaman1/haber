@@ -1,0 +1,686 @@
+{% extends 'haberler/base.html' %}
+
+{% block title %}Arama Sonuçları - Özbel Haber{% endblock %}
+
+{% block content %}
+<!-- Arama Kelimeleri için Vurgulama -->
+{% if arama_kelimeleri %}
+<!-- Arama kelimelerini sayfa yüklenmeden önce veri özniteliği olarak ekle -->
+<div id="arama-verisi"
+    data-arama-kelimeleri='{% for kelime in arama_kelimeleri %}"{{ kelime|lower|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}'>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // DOM'dan arama kelimelerini al
+        var veriElementi = document.getElementById("arama-verisi");
+        var veriMetni = veriElementi.dataset.aramaKelimeleri;
+        var aramaKelimeleri = JSON.parse('[' + veriMetni + ']');
+
+        // Vurgulanacak elementleri seç
+        var basliklar = document.querySelectorAll(".news-title");
+        var ozetler = document.querySelectorAll(".news-excerpt");
+
+        // Vurgulama fonksiyonu
+        function vurgulaMetni(element) {
+            if (!element) return;
+
+            var html = element.innerHTML;
+
+            aramaKelimeleri.forEach(function (kelime) {
+                var regex = new RegExp("(" + kelime + ")", "gi");
+                html = html.replace(regex, '<span class="arama-vurgu">$1</span>');
+            });
+
+            element.innerHTML = html;
+        }
+
+        // Tüm başlık ve özetleri vurgula
+        basliklar.forEach(function (baslik) {
+            vurgulaMetni(baslik);
+        });
+
+        ozetler.forEach(function (ozet) {
+            vurgulaMetni(ozet);
+        });
+    });
+</script>
+
+<style>
+    .arama-vurgu {
+        background-color: rgba(255, 230, 0, 0.3);
+        padding: 0 2px;
+        margin: 0 -2px;
+        border-radius: 3px;
+        font-weight: bold;
+        box-shadow: 0 0 2px rgba(255, 200, 0, 0.5);
+        position: relative;
+        display: inline-block;
+    }
+
+    .arama-vurgu::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: rgba(255, 165, 0, 0.7);
+    }
+</style>
+{% endif %}
+
+<!-- Sayfa Stili -->
+<style>
+    /* Arama sonuçları sayfası başlık bölümü */
+    .arama-header {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        border-bottom: 3px solid #011e5a;
+    }
+
+    .arama-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(to right, #011e5a, #1a56c2, #011e5a);
+    }
+
+    .arama-icon {
+        font-size: 2.5rem;
+        color: #011e5a;
+        margin-bottom: 1rem;
+    }
+
+    .arama-title {
+        color: #011e5a;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        position: relative;
+        display: inline-block;
+    }
+
+    .arama-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 3px;
+        background-color: #011e5a;
+        border-radius: 3px;
+    }
+
+    /* Arama sonuçları kutusu */
+    .arama-sonuc-bilgisi {
+        background-color: #fff;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border-left: 4px solid #011e5a;
+    }
+
+    .arama-sonuc-bilgisi .arama-term {
+        font-weight: 700;
+        color: #011e5a;
+        background-color: rgba(1, 30, 90, 0.08);
+        padding: 3px 8px;
+        border-radius: 4px;
+    }
+
+    .arama-count {
+        font-weight: 600;
+        color: #011e5a;
+    }
+
+    /* Arama kutusu stil */
+    .arama-kutusu {
+        margin: 1.5rem 0;
+    }
+
+    .arama-kutusu .form-control {
+        border-radius: 8px 0 0 8px;
+        height: 50px;
+        border: 1px solid #ced4da;
+        padding-left: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+    }
+
+    .arama-kutusu .form-control:focus {
+        border-color: #011e5a;
+        box-shadow: 0 0 0 0.25rem rgba(1, 30, 90, 0.2);
+    }
+
+    .arama-kutusu .btn {
+        border-radius: 0 8px 8px 0;
+        background-color: #011e5a;
+        border-color: #011e5a;
+        padding: 0 1.5rem;
+        height: 50px;
+    }
+
+    .arama-kutusu .btn:hover {
+        background-color: #01174a;
+    }
+
+    /* Haber kartları stil */
+    .news-card {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+        height: 100%;
+        background-color: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .news-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .news-image {
+        height: 200px;
+        overflow: hidden;
+    }
+
+    .news-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s;
+    }
+
+    .news-card:hover .news-image img {
+        transform: scale(1.05);
+    }
+
+    .news-content {
+        padding: 1.25rem;
+        background-color: #fff;
+    }
+
+    .news-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .news-category {
+        color: #fff;
+        background-color: #011e5a;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+
+    .news-date {
+        color: #6c757d;
+    }
+
+    .news-title {
+        color: #011e5a;
+        font-weight: 700;
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
+        line-height: 1.4;
+    }
+
+    .news-excerpt {
+        color: #495057;
+        margin-bottom: 0.75rem;
+        line-height: 1.5;
+        font-size: 0.95rem;
+    }
+
+    .news-stats {
+        display: flex;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .news-views,
+    .news-comments {
+        margin-right: 1rem;
+    }
+
+    /* Yan panel stilleri */
+    .yan-panel-card {
+        margin-bottom: 1.5rem;
+        border-radius: 8px;
+        border: none;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .yan-panel-card .card-header {
+        background-color: #011e5a;
+        color: white;
+        font-weight: 600;
+        padding: 1rem;
+        border: none;
+    }
+
+    .yan-panel-card .card-body {
+        padding: 1.25rem;
+    }
+
+    .yan-panel-card .benzer-haber-item {
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .yan-panel-card .benzer-haber-item:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    .yan-panel-card .benzer-haber-img {
+        height: 80px;
+        width: 100%;
+        object-fit: cover;
+        border-radius: 6px;
+        margin-bottom: 0.75rem;
+    }
+
+    .yan-panel-card .benzer-haber-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+
+    .yan-panel-card .benzer-haber-title a {
+        color: #011e5a;
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+
+    .yan-panel-card .benzer-haber-title a:hover {
+        color: #0a3d8f;
+    }
+
+    .yan-panel-card .benzer-haber-meta {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    /* Kategori bazlı gruplandırma stilleri */
+    .kategori-grup {
+        position: relative;
+    }
+
+    .kategori-baslik {
+        margin-bottom: 1rem;
+    }
+
+    .kategori-baslik .badge {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 30px;
+        transition: all 0.3s ease;
+    }
+
+    .kategori-baslik .badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(1, 30, 90, 0.2);
+    }
+
+    .kategori-grup hr {
+        border-color: rgba(0, 0, 0, 0.1);
+        margin: 1.5rem 0;
+    }
+
+    /* Sayfalama stil */
+    .pagination {
+        margin-top: 2rem;
+    }
+
+    .page-link {
+        color: #011e5a;
+        border-radius: 4px;
+        margin: 0 2px;
+    }
+
+    .page-item.active .page-link {
+        background-color: #011e5a;
+        border-color: #011e5a;
+    }
+
+    .page-link:focus,
+    .page-link:hover {
+        color: #0a3d8f;
+        box-shadow: 0 0 0 0.2rem rgba(1, 30, 90, 0.25);
+    }
+
+    /* Sonuç yok bildirimi */
+    .arama-sonuc-yok {
+        padding: 3rem 1rem;
+    }
+
+    /* Responsive düzenlemeler */
+    @media (max-width: 991.98px) {
+        .yan-panel {
+            margin-top: 2rem;
+        }
+    }
+</style>
+
+<!-- Arama Başlığı Bölümü -->
+<div class="arama-header text-center">
+    <i class="bi bi-search arama-icon"></i>
+    <h1 class="arama-title">ARAMA SONUÇLARI</h1>
+
+    <!-- Arama Bilgisi -->
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="arama-sonuc-bilgisi">
+                    {% if arama_terimi %}
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i> "<span class="arama-term">{{ arama_terimi }}</span>"
+                        kelimesini başlıklarda aradınız: <span class="arama-count">{{ haberler.paginator.count }}</span>
+                        haber bulundu
+                    </h5>
+                    {% else %}
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle me-2"></i> Lütfen haber başlıklarında arama yapmak için bir kelime
+                        girin.
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Arama Kutusu -->
+                <div class="arama-kutusu">
+                    <form action="{% url 'haber_ara' %}" method="GET" class="d-flex">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="q" value="{{ arama_terimi }}"
+                                placeholder="Haber başlığında ara...">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-search me-2"></i> Ara
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                {% if arama_terimi %}
+                <div class="mt-2">
+                    <p class="text-muted mb-0 small"><i class="bi bi-info-circle me-1"></i> Not: Aramalar sadece haber
+                        başlıklarında yapılmaktadır. Başlıkta aranan kelime veya kelimenin bir kısmı bulunuyorsa
+                        sonuçlarda gösterilecektir. Örneğin, "ekonomi" araması "ekonomik" içeren başlıkları da gösterir.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ana İçerik - İki Sütunlu Yapı -->
+<div class="row">
+    <!-- Sol Sütun - Arama Sonuçları -->
+    <div class="col-lg-8">
+        {% if haberler %}
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            {% for haber in haberler %}
+            <div class="col">
+                <div class="news-card">
+                    <a href="{% url 'haber_detay' haber_slug=haber.slug %}" class="text-decoration-none">
+                        <div class="news-image">
+                            {% if haber.resim %}
+                            <img src="{{ haber.resim.url }}" alt="{{ haber.baslik }}">
+                            {% else %}
+                            <img src="/static/images/default-news.jpg" alt="{{ haber.baslik }}">
+                            {% endif %}
+                        </div>
+                        <div class="news-content">
+                            <div class="news-meta">
+                                {% if haber.kategori %}
+                                <span class="news-category">{{ haber.kategori.ad }}</span>
+                                {% endif %}
+                                <span class="news-date">
+                                    <i class="bi bi-calendar3"></i> {{ haber.yayin_tarihi|date:"d F Y" }}
+                                </span>
+                            </div>
+                            <h4 class="news-title">{{ haber.baslik }}</h4>
+                            <p class="news-excerpt">
+                                {% if haber.ozet %}
+                                {{ haber.ozet|truncatewords:15 }}
+                                {% else %}
+                                {{ haber.icerik|striptags|truncatewords:15 }}
+                                {% endif %}
+                            </p>
+                            <div class="news-stats">
+                                <div class="news-views">
+                                    <i class="bi bi-eye"></i> {{ haber.goruntulenme_sayisi }}
+                                </div>
+                                {% if haber.yorumlar %}
+                                <div class="news-comments">
+                                    <i class="bi bi-chat-left-text"></i> {{ haber.yorumlar.count }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Sayfalama -->
+        {% if haberler.paginator.num_pages > 1 %}
+        <div class="row mt-4 mb-5">
+            <div class="col-12">
+                <nav aria-label="Sayfalama">
+                    <ul class="pagination justify-content-center">
+                        {% if haberler.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?q={{ arama_terimi }}&sayfa={{ haberler.previous_page_number }}"
+                                aria-label="Önceki">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                        </li>
+                        {% endif %}
+
+                        {% for num in haberler.paginator.page_range %}
+                        {% if haberler.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > haberler.number|add:'-3' and num < haberler.number|add:'3' %} <li
+                            class="page-item">
+                            <a class="page-link" href="?q={{ arama_terimi }}&sayfa={{ num }}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+
+                            {% if haberler.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?q={{ arama_terimi }}&sayfa={{ haberler.next_page_number }}"
+                                    aria-label="Sonraki">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                            </li>
+                            {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="arama-sonuc-yok text-center py-5">
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle display-4 d-block mb-3"></i>
+                <h4>Sonuç Bulunamadı</h4>
+                <p class="mb-1">"{{ arama_terimi }}" ile ilgili haber bulunamadı.</p>
+                <p class="mb-3">Lütfen farklı bir arama terimi deneyin veya arama kriterlerinizi genişletin.</p>
+                <div class="mt-3">
+                    <a href="{% url 'ana_sayfa' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-house me-2"></i> Ana Sayfaya Dön
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Sağ Sütun - Yan Panel -->
+    <div class="col-lg-4 yan-panel">
+        <!-- Aynı Kategoriden Haberler -->
+        <div class="card yan-panel-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    {% if secilen_kategori %}
+                    {{ secilen_kategori.ad }} Kategorisindeki Diğer Haberler
+                    {% else %}
+                    İlgili Haberler
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if kategori_haberleri %}
+                {% for haber in kategori_haberleri %}
+                <div class="benzer-haber-item">
+                    {% if haber.resim %}
+                    <img src="{{ haber.resim.url }}" class="benzer-haber-img" alt="{{ haber.baslik }}">
+                    {% else %}
+                    <img src="/static/images/default-news.jpg" class="benzer-haber-img" alt="{{ haber.baslik }}">
+                    {% endif %}
+                    <h6 class="benzer-haber-title">
+                        <a href="{% url 'haber_detay' haber_slug=haber.slug %}">
+                            {{ haber.baslik }}
+                        </a>
+                    </h6>
+                    <div class="benzer-haber-meta">
+                        <span><i class="bi bi-calendar3"></i> {{ haber.yayin_tarihi|date:"d F Y" }}</span>
+                        <span class="ms-2"><i class="bi bi-eye"></i> {{ haber.goruntulenme_sayisi }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% if secilen_kategori %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'kategori_haberleri' kategori_slug=secilen_kategori.slug %}"
+                        class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-grid-3x3-gap-fill me-1"></i> Tüm {{ secilen_kategori.ad }} Haberlerini Gör
+                    </a>
+                </div>
+                {% endif %}
+                {% elif kategoriler_ve_haberler %}
+                {% for kategori, haberler in kategoriler_ve_haberler.items %}
+                <div class="kategori-grup mb-4">
+                    <h6 class="kategori-baslik mb-3">
+                        <a href="{% url 'kategori_haberleri' kategori_slug=kategori.slug %}"
+                            class="text-decoration-none">
+                            <span class="badge" style="background-color: #011e5a;">{{ kategori.ad }}</span>
+                        </a>
+                    </h6>
+
+                    {% for haber in haberler %}
+                    <div class="benzer-haber-item">
+                        {% if haber.resim %}
+                        <img src="{{ haber.resim.url }}" class="benzer-haber-img" alt="{{ haber.baslik }}">
+                        {% else %}
+                        <img src="/static/images/default-news.jpg" class="benzer-haber-img" alt="{{ haber.baslik }}">
+                        {% endif %}
+                        <h6 class="benzer-haber-title">
+                            <a href="{% url 'haber_detay' haber_slug=haber.slug %}">
+                                {{ haber.baslik }}
+                            </a>
+                        </h6>
+                        <div class="benzer-haber-meta">
+                            <span><i class="bi bi-calendar3"></i> {{ haber.yayin_tarihi|date:"d F Y" }}</span>
+                            <span class="ms-2"><i class="bi bi-eye"></i> {{ haber.goruntulenme_sayisi }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    {% if not forloop.last %}
+                    <hr class="my-3">
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% elif benzer_haberler %}
+                {% for benzer in benzer_haberler %}
+                <div class="benzer-haber-item">
+                    {% if benzer.resim %}
+                    <img src="{{ benzer.resim.url }}" class="benzer-haber-img" alt="{{ benzer.baslik }}">
+                    {% else %}
+                    <img src="/static/images/default-news.jpg" class="benzer-haber-img" alt="{{ benzer.baslik }}">
+                    {% endif %}
+                    <h6 class="benzer-haber-title">
+                        <a href="{% url 'haber_detay' haber_slug=benzer.slug %}">
+                            {{ benzer.baslik }}
+                        </a>
+                    </h6>
+                    <div class="benzer-haber-meta">
+                        <span><i class="bi bi-calendar3"></i> {{ benzer.yayin_tarihi|date:"d F Y" }}</span>
+                        <span class="ms-2"><i class="bi bi-eye"></i> {{ benzer.goruntulenme_sayisi }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-muted">
+                    {% if arama_terimi %}
+                    <p>"{{ arama_terimi }}" ile ilgili benzer haberler bulunamadı.</p>
+                    {% else %}
+                    <p>Lütfen arama yaparak benzer haberleri görüntüleyin.</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Son Eklenen Haberler -->
+        <div class="card yan-panel-card">
+            <div class="card-header">
+                <h5 class="mb-0">Son Eklenenler</h5>
+            </div>
+            <div class="card-body">
+                {% if son_haberler %}
+                {% for son in son_haberler %}
+                <div class="benzer-haber-item">
+                    {% if son.resim %}
+                    <img src="{{ son.resim.url }}" class="benzer-haber-img" alt="{{ son.baslik }}">
+                    {% else %}
+                    <img src="/static/images/default-news.jpg" class="benzer-haber-img" alt="{{ son.baslik }}">
+                    {% endif %}
+                    <h6 class="benzer-haber-title">
+                        <a href="{% url 'haber_detay' haber_slug=son.slug %}">
+                            {{ son.baslik }}
+                        </a>
+                    </h6>
+                    <div class="benzer-haber-meta">
+                        <span><i class="bi bi-calendar3"></i> {{ son.yayin_tarihi|date:"d F Y" }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted">Henüz haber bulunmamaktadır.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
