@@ -3,43 +3,13 @@
 {% block title %}Ana Sayfa - Özbel Haber{% endblock %}
 
 {% block content %}
-<!-- Sol Taraf Reklam (Yapışkan) -->
-<div class="sticky-ad-left d-none d-xl-block">
-    <div class="ad-label">Reklam</div>
-    <div class="google-ad-slot-vertical" id="googleAdLeft">
-        <!-- Google Adsense kodu buraya eklenecek -->
-        <div class="placeholder-ad-vertical">
-            <span>G<br>o<br>o<br>g<br>l<br>e<br><br>A<br>d<br>s<br>e<br>n<br>s<br>e</span>
-        </div>
-    </div>
-</div>
-
-<!-- Sağ Taraf Reklam (Yapışkan) -->
-<div class="sticky-ad-right d-none d-xl-block">
-    <div class="ad-label">Reklam</div>
-    <div class="google-ad-slot-vertical" id="googleAdRight">
-        <!-- Google Adsense kodu buraya eklenecek -->
-        <div class="placeholder-ad-vertical">
-            <span>G<br>o<br>o<br>g<br>l<br>e<br><br>A<br>d<br>s<br>e<br>n<br>s<br>e</span>
-        </div>
-    </div>
-</div>
+<!-- Yan reklamlar -->
+{% include 'haberler/includes/ads.html' with position="left_sidebar" %}
+{% include 'haberler/includes/ads.html' with position="right_sidebar" %}
 
 <div class="container mt-4">
-    <!-- Google Reklam Alanı - Üst Kısım -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="google-ad-container">
-                <div class="ad-label">Reklam</div>
-                <div class="google-ad-slot" id="googleAdTop">
-                    <!-- Google Adsense kodu buraya eklenecek -->
-                    <div class="placeholder-ad">
-                        <span>Google Adsense Reklam Alanı</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Üst Reklam Alanı -->
+    {% include 'haberler/includes/ads.html' with position="top" %}
 
     <!-- Son Dakika Haber Bandı -->
     <div class="breaking-news-container mb-4 son-dakika-container">
@@ -53,9 +23,20 @@
                     </div>
                 </div>
                 <span class="current-time me-3" id="currentTime"></span>
+
+                <!-- Mobil görünümde ekonomik bilgileri açmak için buton -->
+                {% if financial_data %}
+                <button class="ekonomik-toggle-btn d-md-none" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#ekonomikBilgilerCollapse" aria-expanded="false"
+                    aria-controls="ekonomikBilgilerCollapse">
+                    <i class="bi bi-currency-exchange"></i>
+                    <span class="ms-1">Döviz & Hava</span>
+                </button>
+                {% endif %}
             </div>
             {% if financial_data %}
-            <div class="d-flex align-items-center ekonomik-bilgiler">
+            <!-- Mobil görünümde gizlenecek ve açılabilir olacak ekonomik bilgiler -->
+            <div class="d-md-flex d-none align-items-center ekonomik-bilgiler">
                 <div class="ekonomik-item">
                     <span class="currency-label">USD:</span>
                     <span class="currency-value">{{ financial_data.usd }}₺</span>
@@ -78,6 +59,35 @@
                 </div>
                 <div id="weatherInfo" class="ekonomik-item">
                     <!-- Hava durumu bilgileri buraya dinamik olarak eklenecek -->
+                </div>
+            </div>
+
+            <!-- Mobil görünümde açılabilir ekonomik bilgiler -->
+            <div class="collapse mt-2 mb-0" id="ekonomikBilgilerCollapse">
+                <div class="ekonomik-bilgiler-mobile">
+                    <div class="ekonomik-item">
+                        <span class="currency-label">USD:</span>
+                        <span class="currency-value">{{ financial_data.usd }}₺</span>
+                    </div>
+                    <div class="ekonomik-item">
+                        <span class="currency-label">EUR:</span>
+                        <span class="currency-value">{{ financial_data.eur }}₺</span>
+                    </div>
+                    <div class="ekonomik-item">
+                        <span class="currency-label">GBP:</span>
+                        <span class="currency-value">{{ financial_data.gbp }}₺</span>
+                    </div>
+                    <div class="ekonomik-item">
+                        <span class="currency-label">ALTIN:</span>
+                        <span class="currency-value">{{ financial_data.gold }}₺</span>
+                    </div>
+                    <div class="ekonomik-item">
+                        <span class="currency-label">BIST:</span>
+                        <span class="currency-value">{{ financial_data.bist }}</span>
+                    </div>
+                    <div id="weatherInfoMobile" class="ekonomik-item">
+                        <!-- Hava durumu bilgileri buraya dinamik olarak eklenecek (mobil) -->
+                    </div>
                 </div>
             </div>
             {% endif %}
@@ -123,8 +133,8 @@
                 <div class="section-baslik-divider"></div>
             </div>
         </div>
-        <!-- Sol Taraf - Haber Listesi -->
-        <div class="col-md-3">
+        <!-- Sol Taraf - Haber Listesi (Mobilde gizlenecek) -->
+        <div class="col-md-3 d-none d-md-block">
             <div class="news-list-container">
                 <div class="news-list">
                     {% for haber in haberler|slice:":10" %}
@@ -145,8 +155,8 @@
             </div>
         </div>
 
-        <!-- Sağ Taraf - Büyük Haber Gösterimi -->
-        <div class="col-md-9">
+        <!-- Sağ Taraf - Büyük Haber Gösterimi (Mobilde tam genişlik olacak) -->
+        <div class="col-md-9 col-12">
             <div class="featured-news-slider">
                 {% for haber in haberler|slice:":10" %}
                 <div class="featured-news-item {% if forloop.first %}active{% endif %}"
@@ -175,10 +185,6 @@
                                         </div>
                                         <div class="featured-news-meta">
                                             <div class="d-flex align-items-center gap-4">
-                                                <span>
-                                                    <i class="bi bi-eye me-2"></i>
-                                                    {{ haber.goruntulenme_sayisi }} görüntülenme
-                                                </span>
                                                 <span>
                                                     <i class="bi bi-calendar me-2"></i>
                                                     {{ haber.yayin_tarihi|date:"d F Y" }}
@@ -362,6 +368,37 @@
                     </div>
                 </div>
                 {% endfor %}
+
+                <!-- İlan Verebilirsiniz Kartı -->
+                <div class="swiper-slide" style="opacity: 1 !important; visibility: visible !important;">
+                    <div class="ilan-card ilan-ver-card">
+                        <a href="https://wa.me/905423538726?text=Özbel%20Haber%20reklam%20vitrini%20için%20bilgi%20almak%20istiyorum."
+                            target="_blank" class="ilan-link">
+                            <div class="ilan-image-wrapper"
+                                style="display: flex; align-items: center; justify-content: center; background-color: #25D366;">
+                                <div class="ilan-no-logo"
+                                    style="background-color: white; color: #25D366; transform: scale(1.5);">
+                                    <i class="bi bi-whatsapp"></i>
+                                </div>
+                            </div>
+                            <div class="ilan-content">
+                                <h3 class="ilan-firma-adi" style="color: #25D366; font-weight: 700;">İşletmeniz Burada
+                                    Olsun!</h3>
+                                <p class="ilan-faaliyet">Özbel Haber'de işletmenizi tanıtın</p>
+                                <div class="ilan-meta">
+                                    <div class="ilan-adres">
+                                        <i class="bi bi-whatsapp me-1" style="color: #25D366;"></i>
+                                        <span>Hemen iletişime geçin</span>
+                                    </div>
+                                    <div class="ilan-telefon">
+                                        <i class="bi bi-telephone me-1"></i>
+                                        <span>0542 353 8726</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
             </div>
             <div class="swiper-pagination"></div>
         </div>
@@ -392,77 +429,38 @@
                 <div class="section-baslik-divider"></div>
             </div>
         </div>
-    </div>
-    <div class="empty-ilan-container">
-        <div class="empty-ilan-content">
-            <i class="bi bi-shop display-4 mb-3"></i>
-            <h4>İlan Vitrini Boş</h4>
-            <p>Şu anda gösterilecek ilan bulunmuyor. İlanlar yönetici tarafından eklenecektir.</p>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-<!-- Son Haberler -->
-<div class="row">
-    <div class="col-12 mb-4">
-        <div class="section-baslik">
-            <h2 class="section-title" style="color: #011e5a; font-weight: 700;">
-                <i class="bi bi-newspaper me-2"></i>
-                <div class="letter-wave-text">
-                    <span class="wave-letter">S</span>
-                    <span class="wave-letter">O</span>
-                    <span class="wave-letter">N</span>
-                    <span class="wave-letter">&nbsp;</span>
-                    <span class="wave-letter">H</span>
-                    <span class="wave-letter">A</span>
-                    <span class="wave-letter">B</span>
-                    <span class="wave-letter">E</span>
-                    <span class="wave-letter">R</span>
-                    <span class="wave-letter">L</span>
-                    <span class="wave-letter">E</span>
-                    <span class="wave-letter">R</span>
-                </div>
-            </h2>
-            <div class="section-baslik-divider"></div>
-        </div>
-    </div>
-</div>
-
-<!-- Google Reklam Alanı - Haberler Öncesi -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="google-ad-container">
-            <div class="ad-label">Reklam</div>
-            <div class="google-ad-slot" id="googleAdBeforeNews">
-                <!-- Google Adsense kodu buraya eklenecek -->
-                <div class="placeholder-ad">
-                    <span>Google Adsense Reklam Alanı</span>
+        <div class="empty-ilan-container">
+            <div class="empty-ilan-content">
+                <i class="bi bi-shop display-4 mb-3" style="color: #011e5a;"></i>
+                <h4 style="color: #011e5a; font-weight: 700;">İşletmenizin Görünürlüğünü Artırmak İster Misiniz?</h4>
+                <p>Özbel Haber reklam vitrininde yerinizi alın. Web sitemizi ziyaret eden binlerce kişiye işletmenizi
+                    tanıtın!</p>
+                <div class="mt-3">
+                    <a href="https://wa.me/905423538726?text=Özbel%20Haber%20reklam%20vitrini%20için%20bilgi%20almak%20istiyorum."
+                        class="btn btn-success px-4 py-2"
+                        style="background-color: #25D366; border: none; font-weight: 600;">
+                        <i class="bi bi-whatsapp me-2"></i> İletişime Geçin
+                    </a>
+                    <span class="d-block mt-2" style="font-size: 0.9rem; color: #666;">
+                        <i class="bi bi-telephone me-1"></i> 0542 353 8726
+                    </span>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endif %}
+
+<!-- Haberler Öncesi Reklam Alanı -->
+{% include 'haberler/includes/ads.html' with position="middle" %}
 
 <!-- Haber Grid -->
 <div class="row" id="haberler-container">
     {% include 'haberler/includes/haber_kartlari.html' %}
 </div>
 
-<!-- Google Reklam Alanı - Sayfalama Öncesi -->
-<div class="row mt-4 mb-3">
-    <div class="col-12">
-        <div class="google-ad-container">
-            <div class="ad-label">Reklam</div>
-            <div class="google-ad-slot" id="googleAdAfterNews">
-                <!-- Google Adsense kodu buraya eklenecek -->
-                <div class="placeholder-ad">
-                    <span>Google Adsense Reklam Alanı</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Sayfalama Öncesi Reklam Alanı -->
+{% include 'haberler/includes/ads.html' with position="bottom" %}
 
 {% if haberler.has_next %}
 <div class="row mt-4" id="loading-container">
@@ -783,6 +781,57 @@
                 box-shadow: 0 0 3px rgba(1, 30, 90, 0.5);
             }
         }
+
+        /* Mobil Ekonomik Bilgiler Toggle Butonu */
+        .ekonomik-toggle-btn {
+            background-color: rgba(1, 30, 90, 0.8);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .ekonomik-toggle-btn:hover,
+        .ekonomik-toggle-btn:focus {
+            background-color: rgba(1, 30, 90, 1);
+            box-shadow: 0 0 8px rgba(1, 30, 90, 0.6);
+        }
+
+        /* Mobil Ekonomik Bilgiler Açılır Panel */
+        .ekonomik-bilgiler-mobile {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 8px 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .ekonomik-bilgiler-mobile .ekonomik-item {
+            flex: 1 0 45%;
+            min-width: 0;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+            justify-content: flex-start;
+            padding: 5px 8px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     }
 
     /* Haber Listesi Stilleri */
@@ -939,6 +988,11 @@
             margin-bottom: 20px;
         }
 
+        .featured-news-slider {
+            height: 350px;
+            /* Mobilde daha küçük yükseklik */
+        }
+
         .featured-news-overlay {
             padding: 1.5rem;
         }
@@ -995,6 +1049,34 @@
         .d-flex.align-items-center {
             width: 100%;
             justify-content: space-between;
+        }
+
+        /* Mobil için slider iyileştirmeleri */
+        .featured-news-item .position-relative img {
+            height: 350px !important;
+            /* Mobilde daha küçük resim yüksekliği */
+        }
+
+        .nav-btn {
+            width: 35px;
+            height: 35px;
+            font-size: 1.2rem;
+        }
+
+        /* Mobilde yazı boyutu ve boşluk ayarlamaları */
+        .featured-news-title {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .featured-news-meta .d-flex {
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .read-more-btn {
+            margin-top: 5px;
+            padding: 6px 12px;
         }
     }
 
@@ -1076,6 +1158,20 @@
         transform: rotate(30deg) translate(10%, 10%);
     }
 
+    .news-author {
+        color: #011e5a;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .news-author i {
+        font-size: 0.9rem;
+        color: #011e5a;
+    }
+
     .news-date {
         color: #666;
         font-size: 0.85rem;
@@ -1099,6 +1195,37 @@
         line-height: 1.4;
         color: #666;
         margin-bottom: 15px;
+    }
+
+    .news-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 10px;
+        margin-top: auto;
+    }
+
+    .news-author {
+        color: #011e5a;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        background-color: rgba(1, 30, 90, 0.08);
+        padding: 4px 10px;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .news-author:hover {
+        background-color: rgba(1, 30, 90, 0.15);
+    }
+
+    .news-author i {
+        font-size: 0.9rem;
+        color: #011e5a;
     }
 
     .news-stats {
@@ -1760,40 +1887,55 @@
     .empty-ilan-container {
         padding: 40px 20px;
         text-align: center;
-        border: 2px dashed #e0e0e0;
+        border: 2px dashed #011e5a;
         border-radius: 8px;
-        background-color: #f9f9f9;
+        background-color: rgba(1, 30, 90, 0.03);
+        transition: all 0.3s ease;
+        animation: gentle-pulse 3s infinite;
+    }
+
+    .empty-ilan-container:hover {
+        border-color: #0a3d8f;
+        background-color: rgba(1, 30, 90, 0.05);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(1, 30, 90, 0.1);
+    }
+
+    @keyframes gentle-pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(1, 30, 90, 0.2);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(1, 30, 90, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(1, 30, 90, 0);
+        }
     }
 
     .empty-ilan-content {
-        max-width: 400px;
+        max-width: 500px;
         margin: 0 auto;
-        color: #777;
+        color: #444;
     }
 
     .empty-ilan-content i {
         color: #011e5a;
-        opacity: 0.5;
+        animation: scale-icon 2s infinite;
     }
 
-    /* İlan sliderı için pagination stilleri */
-    .ilan-slider .swiper-pagination {
-        position: absolute;
-        bottom: 0;
-        margin-top: 0;
-    }
+    @keyframes scale-icon {
 
-    .ilan-slider .swiper-pagination-bullet {
-        width: 10px;
-        height: 10px;
-        background-color: #ddd;
-        opacity: 1;
-    }
+        0%,
+        100% {
+            transform: scale(1);
+        }
 
-    .ilan-slider .swiper-pagination-bullet-active {
-        background-color: #011e5a;
-        width: 20px;
-        border-radius: 5px;
+        50% {
+            transform: scale(1.1);
+        }
     }
 
     /* Sonsuz Kaydırma Stilleri */
@@ -1985,6 +2127,54 @@
             display: none !important;
         }
     }
+
+    /* İlan sliderı için pagination stilleri */
+    .ilan-slider .swiper-pagination {
+        position: absolute;
+        bottom: 0;
+        margin-top: 0;
+    }
+
+    .ilan-slider .swiper-pagination-bullet {
+        width: 10px;
+        height: 10px;
+        background-color: #ddd;
+        opacity: 1;
+    }
+
+    .ilan-slider .swiper-pagination-bullet-active {
+        background-color: #011e5a;
+        width: 20px;
+        border-radius: 5px;
+    }
+
+    /* İlan Ver Özel Stili */
+    .ilan-ver-card {
+        border: 2px solid #25D366;
+        transform: scale(1.02);
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(37, 211, 102, 0.25);
+        animation: pulse-green 2s infinite;
+    }
+
+    .ilan-ver-card:hover {
+        transform: translateY(-8px) scale(1.05);
+        box-shadow: 0 12px 30px rgba(37, 211, 102, 0.35);
+    }
+
+    @keyframes pulse-green {
+        0% {
+            box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.4);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(37, 211, 102, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+        }
+    }
 </style>
 {% endblock %}
 
@@ -1996,6 +2186,7 @@
     // Hava durumu bilgilerini güncelleme fonksiyonu
     async function updateWeatherInfo() {
         const weatherContainer = document.getElementById('weatherInfo');
+        const weatherContainerMobile = document.getElementById('weatherInfoMobile');
 
         try {
             // Konum bilgisini al
@@ -2009,22 +2200,39 @@
             const response = await fetch(`https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${latitude},${longitude}&lang=tr`);
             const data = await response.json();
 
-            // Hava durumu bilgilerini göster
-            weatherContainer.innerHTML = `
-                <div class="ekonomik-item">
+            // Masaüstü için hava durumu bilgilerini göster
+            if (weatherContainer) {
+                weatherContainer.innerHTML = `
+                    <div class="ekonomik-item">
+                        <span class="currency-label">${data.location.name}:</span>
+                        <span class="currency-value">${data.current.temp_c}°C</span>
+                        <img src="${data.current.condition.icon}" alt="${data.current.condition.text}" style="width: 20px; height: 20px; margin-left: 5px;">
+                    </div>
+                `;
+            }
+
+            // Mobil için hava durumu bilgilerini göster
+            if (weatherContainerMobile) {
+                weatherContainerMobile.innerHTML = `
                     <span class="currency-label">${data.location.name}:</span>
                     <span class="currency-value">${data.current.temp_c}°C</span>
                     <img src="${data.current.condition.icon}" alt="${data.current.condition.text}" style="width: 20px; height: 20px; margin-left: 5px;">
-                </div>
-            `;
+                `;
+            }
         } catch (error) {
             // Konum bilgisi kapalı veya hata durumunda
-            weatherContainer.innerHTML = `
-                <div class="ekonomik-item">
-                    <span class="currency-label">Konum:</span>
-                    <span class="currency-value">Kapalı</span>
-                </div>
+            const errorMessage = `
+                <span class="currency-label">Konum:</span>
+                <span class="currency-value">Kapalı</span>
             `;
+
+            if (weatherContainer) {
+                weatherContainer.innerHTML = `<div class="ekonomik-item">${errorMessage}</div>`;
+            }
+
+            if (weatherContainerMobile) {
+                weatherContainerMobile.innerHTML = errorMessage;
+            }
         }
     }
 
@@ -2139,16 +2347,20 @@
                     },
                     breakpoints: {
                         640: {
-                            slidesPerView: 2
+                            slidesPerView: 2,
+                            spaceBetween: 15
                         },
                         768: {
-                            slidesPerView: 3
+                            slidesPerView: 3,
+                            spaceBetween: 15
                         },
                         1024: {
-                            slidesPerView: 4
+                            slidesPerView: 4,
+                            spaceBetween: 15
                         },
                         1200: {
-                            slidesPerView: 6
+                            slidesPerView: 5,
+                            spaceBetween: 15
                         }
                     }
                 });
@@ -2162,25 +2374,30 @@
         const featuredItems = document.querySelectorAll('.featured-news-item');
         const newsList = document.querySelector('.news-list');
         let currentIndex = 0;
-        const totalItems = newsItems.length;
+        const totalItems = featuredItems.length;
         const itemHeight = 133;
+
+        // Mobil cihaz kontrolü
+        const isMobile = window.innerWidth < 768;
 
         function updateNewsDisplay(index) {
             // Aktif olan öğeyi güncelle
-            newsItems.forEach(item => item.classList.remove('active'));
             featuredItems.forEach(item => item.classList.remove('active'));
 
-            newsItems[index].classList.add('active');
+            // Masaüstü görünümünde haber listesini de güncelle
+            if (!isMobile && newsItems.length > 0 && newsList) {
+                newsItems.forEach(item => item.classList.remove('active'));
+                newsItems[index].classList.add('active');
 
-            // Data-index attribute'a göre ilgili featured item'ı bul ve aktif yap
-            const targetFeaturedItem = document.querySelector(`.featured-news-item[data-index="${index}"]`);
-            if (targetFeaturedItem) {
-                targetFeaturedItem.classList.add('active');
+                // Listeyi scroll et
+                const scrollPosition = index * itemHeight;
+                newsList.style.transform = `translateY(-${scrollPosition}px)`;
             }
 
-            // Listeyi scroll et
-            const scrollPosition = index * itemHeight;
-            newsList.style.transform = `translateY(-${scrollPosition}px)`;
+            // Featured item'ı aktif yap
+            if (featuredItems[index]) {
+                featuredItems[index].classList.add('active');
+            }
         }
 
         function autoSlide() {
@@ -2193,29 +2410,41 @@
         const sliderContainer = document.querySelector('.featured-news-slider');
         const newsListContainer = document.querySelector('.news-list-container');
 
-        [sliderContainer, newsListContainer].forEach(container => {
-            container.addEventListener('mouseenter', () => {
+        // Slider container için fare olayları
+        if (sliderContainer) {
+            sliderContainer.addEventListener('mouseenter', () => {
                 clearInterval(slideInterval);
             });
 
-            container.addEventListener('mouseleave', () => {
+            sliderContainer.addEventListener('mouseleave', () => {
                 slideInterval = setInterval(autoSlide, 5000);
             });
-        });
+        }
 
-        // Haber listesi öğelerine tıklama olayı
-        newsItems.forEach((item, index) => {
-            item.addEventListener('click', function (e) {
-                if (e.target.closest('a')) {
-                    // Link tıklaması ise normal davranışa izin ver
-                    return;
-                }
-                // Link dışı tıklamalarda sadece slider'ı güncelle
-                e.preventDefault();
-                currentIndex = index;
-                updateNewsDisplay(currentIndex);
+        // Masaüstü görünümünde haber listesi için fare olayları
+        if (!isMobile && newsListContainer) {
+            newsListContainer.addEventListener('mouseenter', () => {
+                clearInterval(slideInterval);
             });
-        });
+
+            newsListContainer.addEventListener('mouseleave', () => {
+                slideInterval = setInterval(autoSlide, 5000);
+            });
+
+            // Haber listesi öğelerine tıklama olayı (sadece masaüstünde)
+            newsItems.forEach((item, index) => {
+                item.addEventListener('click', function (e) {
+                    if (e.target.closest('a')) {
+                        // Link tıklaması ise normal davranışa izin ver
+                        return;
+                    }
+                    // Link dışı tıklamalarda sadece slider'ı güncelle
+                    e.preventDefault();
+                    currentIndex = index;
+                    updateNewsDisplay(currentIndex);
+                });
+            });
+        }
 
         // Yön tuşları için fonksiyonlar
         window.prevSlide = function (e) {
@@ -2237,13 +2466,25 @@
         }
 
         // Butonlara tıklandığında habere yönlendirmeyi engelle
-        document.querySelector('.slider-controls').addEventListener('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-        });
+        const sliderControls = document.querySelector('.slider-controls');
+        if (sliderControls) {
+            sliderControls.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        }
 
         // Başlangıçta ilk haberi göster
         updateNewsDisplay(0);
+
+        // Ekran boyutu değiştiğinde
+        window.addEventListener('resize', function () {
+            // Mobil/masaüstü geçişlerinde sayfayı yenile
+            const newIsMobile = window.innerWidth < 768;
+            if (newIsMobile !== isMobile) {
+                location.reload();
+            }
+        });
 
         // Sonsuz kaydırma (infinite scroll) için kod
         let loading = false;

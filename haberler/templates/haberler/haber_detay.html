@@ -2,8 +2,35 @@
 
 {% block title %}{{ haber.baslik }} - Haber Portalı{% endblock %}
 
+{% block og_title %}{{ haber.baslik }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block twitter_card %}summary_large_image{% endblock %}
+{% block twitter_title %}{{ haber.baslik }}{% endblock %}
+{% block og_description %}{{ haber.ozet|default:haber.icerik|truncatewords:50 }}{% endblock %}
+{% block twitter_description %}{{ haber.ozet|default:haber.icerik|truncatewords:50 }}{% endblock %}
+
+{% if haber.resim %}
+{% block og_image %}{{ haber.resim.url }}{% endblock %}
+{% block twitter_image %}{{ haber.resim.url }}{% endblock %}
+{% endif %}
+
 {% block extra_css %}
 <style>
+    /* X butonu için özel stillendirme */
+    .x-button {
+        color: #000 !important;
+        border-color: #000 !important;
+        background-color: #fff !important;
+    }
+
+    .x-button:hover {
+        background-color: #f2f2f2 !important;
+    }
+
+    .bi-twitter-x {
+        font-weight: bold;
+    }
+
     .news-title {
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         position: relative;
@@ -146,6 +173,13 @@
 {% endblock %}
 
 {% block content %}
+<!-- Yan reklamlar -->
+{% include 'haberler/includes/ads.html' with position="left_sidebar" %}
+{% include 'haberler/includes/ads.html' with position="right_sidebar" %}
+
+<!-- Üst Reklam Alanı -->
+{% include 'haberler/includes/ads.html' with position="top" %}
+
 <div class="row">
     <!-- Ana İçerik -->
     <div class="col-lg-8">
@@ -174,7 +208,7 @@
                 class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
                 <div class="text-muted mb-2 mb-md-0">
                     <small>
-                        <i class="bi bi-person"></i> Yazar: {{ haber.yazar }} |
+                        <i class="bi bi-person"></i> Yazar: {{ haber.get_yazar_adi }} |
                         <i class="bi bi-folder"></i> Kategori: {{ haber.kategori }} |
                         <i class="bi bi-clock"></i> {{ haber.yayin_tarihi|date:"d F Y" }}
                     </small>
@@ -183,19 +217,20 @@
                     <!-- Paylaşım Butonları -->
                     <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-outline-primary" onclick="shareOnFacebook()"
-                            style="color: #011e5a; border-color: #011e5a;">
+                            style="color: #011e5a; border-color: #011e5a;" title="Facebook'ta Paylaş">
                             <i class="bi bi-facebook"></i>
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="shareOnTwitter()"
-                            style="color: #011e5a; border-color: #011e5a;">
-                            <i class="bi bi-twitter"></i>
+                        <button type="button" class="btn btn-sm btn-outline-primary x-button" onclick="shareOnTwitter()"
+                            style="color: #000000; border-color: #000000; background-color: #ffffff;"
+                            title="X'te Paylaş">
+                            <i class="bi bi-twitter-x"></i>
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-primary" onclick="shareOnWhatsApp()"
-                            style="color: #011e5a; border-color: #011e5a;">
+                            style="color: #011e5a; border-color: #011e5a;" title="WhatsApp'ta Paylaş">
                             <i class="bi bi-whatsapp"></i>
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-primary" onclick="copyLink()"
-                            style="color: #011e5a; border-color: #011e5a;">
+                            style="color: #011e5a; border-color: #011e5a;" title="Bağlantıyı Kopyala">
                             <i class="bi bi-link-45deg"></i>
                         </button>
                     </div>
@@ -206,6 +241,9 @@
                 </div>
             </div>
 
+            <!-- İçerik Öncesi Reklam Alanı -->
+            {% include 'haberler/includes/ads.html' with position="middle" %}
+
             {% if haber.resim %}
             <div class="ratio ratio-16x9 mb-4">
                 <img src="{{ haber.resim.url }}" class="img-fluid rounded object-fit-cover" alt="{{ haber.baslik }}">
@@ -215,6 +253,9 @@
             <div class="content mb-5 fs-5 fs-md-4">
                 {{ haber.icerik|safe }}
             </div>
+
+            <!-- İçerik Sonrası Reklam Alanı -->
+            {% include 'haberler/includes/ads.html' with position="in_content" ad_number=1 %}
 
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
                 <div class="text-muted mb-2 mb-md-0">
@@ -234,6 +275,9 @@
 
     <!-- Yan Panel -->
     <div class="col-lg-4 mt-4 mt-lg-0">
+        <!-- Yan Sütun Üst Reklam Alanı -->
+        {% include 'haberler/includes/ads.html' with position="in_content" ad_number=2 %}
+
         <!-- Benzer Haberler -->
         <div class="card mb-4">
             <div class="card-header text-white" style="background-color: #011e5a;">
@@ -267,6 +311,9 @@
             </div>
         </div>
 
+        <!-- Yan Sütun Orta Reklam Alanı -->
+        {% include 'haberler/includes/ads.html' with position="in_content" ad_number=3 %}
+
         <!-- En Çok Okunan Haberler -->
         <div class="card mb-4">
             <div class="card-header text-white" style="background-color: #011e5a;">
@@ -287,7 +334,7 @@
                         </a>
                     </h6>
                     <p class="card-text small text-muted">
-                        <i class="bi bi-eye"></i> {{ haber.goruntulenme_sayisi }} okunma
+                        {{ haber.yayin_tarihi|date:"d F Y" }}
                     </p>
                 </div>
                 {% if not forloop.last %}
@@ -299,38 +346,11 @@
                 {% endif %}
             </div>
         </div>
-
-        <!-- Son Yorumlar -->
-        <div class="card">
-            <div class="card-header text-white" style="background-color: #011e5a;">
-                <h5 class="mb-0">Son Yorumlar</h5>
-            </div>
-            <div class="card-body">
-                {% if son_yorumlar %}
-                {% for yorum in son_yorumlar %}
-                <div class="mb-3">
-                    <div class="d-flex align-items-center mb-2">
-                        <img src="{{ yorum.yazar.profile.resim.url|default:'/static/images/default-avatar.png' }}"
-                            class="rounded-circle me-2" alt="{{ yorum.yazar.username }}"
-                            style="width: 32px; height: 32px; object-fit: cover;">
-                        <div>
-                            <strong style="color: #011e5a;">{{ yorum.yazar.username }}</strong>
-                            <small class="text-muted d-block">{{ yorum.olusturulma_tarihi|date:"d F Y H:i" }}</small>
-                        </div>
-                    </div>
-                    <p class="mb-0">{{ yorum.icerik|truncatewords:20 }}</p>
-                </div>
-                {% if not forloop.last %}
-                <hr>
-                {% endif %}
-                {% endfor %}
-                {% else %}
-                <p class="text-muted">Henüz yorum yapılmamış.</p>
-                {% endif %}
-            </div>
-        </div>
     </div>
 </div>
+
+<!-- Alt Reklam Alanı -->
+{% include 'haberler/includes/ads.html' with position="bottom" %}
 
 {% endblock %}
 
@@ -339,27 +359,47 @@
     // Paylaşım fonksiyonları
     function shareOnFacebook() {
         const url = encodeURIComponent(window.location.href);
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+        // Facebook paylaşım dialogunu açıyoruz, Open Graph meta etiketleri sayesinde resim otomatik olarak alınacak
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=600,height=400');
     }
 
     function shareOnTwitter() {
         const url = encodeURIComponent(window.location.href);
         const title = encodeURIComponent(document.title);
-        window.open(`https://twitter.com/intent/tweet?url=${url}&text=${title}`, '_blank');
+        // X paylaşım dialogunu açıyoruz
+        window.open(`https://x.com/intent/tweet?url=${url}&text=${title}&via=ozhaber27`, '_blank', 'width=600,height=400');
     }
 
     function shareOnWhatsApp() {
         const url = encodeURIComponent(window.location.href);
         const title = encodeURIComponent(document.title);
-        window.open(`https://wa.me/?text=${title}%20${url}`, '_blank');
+        // Mobil cihazlar için WhatsApp web linki
+        if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            window.open(`whatsapp://send?phone=905423538723&text=${title}%20${url}`);
+        } else {
+            // Masaüstü için WhatsApp Web
+            window.open(`https://web.whatsapp.com/send?phone=905423538723&text=${title}%20${url}`, '_blank');
+        }
     }
 
     function copyLink() {
         const url = window.location.href;
         navigator.clipboard.writeText(url).then(() => {
-            alert('Link kopyalandı!');
+            // Daha kullanıcı dostu geri bildirim
+            const button = document.querySelector('.btn-group button:last-child');
+            const originalIcon = button.innerHTML;
+            button.innerHTML = '<i class="bi bi-check-lg"></i>';
+            button.classList.remove('btn-outline-primary');
+            button.classList.add('btn-success');
+
+            setTimeout(() => {
+                button.innerHTML = originalIcon;
+                button.classList.remove('btn-success');
+                button.classList.add('btn-outline-primary');
+            }, 2000);
         }).catch(err => {
             console.error('Link kopyalanırken hata oluştu:', err);
+            alert('Link kopyalanırken bir hata oluştu.');
         });
     }
 

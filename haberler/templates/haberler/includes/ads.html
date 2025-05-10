@@ -1,0 +1,119 @@
+{% comment %}
+Bu şablon, sitenin tüm sayfalarında kullanılabilecek reklam alanlarını tanımlar.
+Google AdSense kodlarını tek bir yerden yönetmek için kullanılır.
+
+Kullanım:
+- include 'haberler/includes/ads.html' with position="top" %}
+
+Mevcut reklam pozisyonları:
+- top: Sayfanın üst kısmında bulunan yatay banner
+- middle: İçeriğin ortasında bulunan dikdörtgen banner
+- bottom: Sayfanın alt kısmında bulunan yatay banner
+- in_content: İçeriğin aralarında yer alan banner (numaralandırılabilir)
+- left_sidebar: Sol tarafta sabit duran dikey banner
+- right_sidebar: Sağ tarafta sabit duran dikey banner
+{% endcomment %}
+
+{% if position == "top" %}
+<!-- Üst Reklam Alanı -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="google-ad-container">
+            <div class="ad-label">Reklam</div>
+            <div class="google-ad-slot" id="googleAdTop">
+                <!-- Google Adsense kodu buraya eklenecek -->
+                <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXX"
+                    data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if position == "middle" %}
+<!-- Orta Reklam Alanı -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="google-ad-container">
+            <div class="ad-label">Reklam</div>
+            <div class="google-ad-slot" id="googleAdMiddle">
+                <!-- Google Adsense kodu buraya eklenecek -->
+                <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXX"
+                    data-ad-slot="XXXXXXXXXX" data-ad-format="rectangle" data-full-width-responsive="true"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if position == "bottom" %}
+<!-- Alt Reklam Alanı -->
+<div class="row mt-4 mb-4">
+    <div class="col-12">
+        <div class="google-ad-container">
+            <div class="ad-label">Reklam</div>
+            <div class="google-ad-slot" id="googleAdBottom">
+                <!-- Google Adsense kodu buraya eklenecek -->
+                <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXX"
+                    data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if position == "in_content" %}
+<!-- İçerik İçi Reklam Alanı -->
+<div class="col-12 mb-4">
+    <div class="google-ad-container">
+        <div class="ad-label">Reklam</div>
+        <div class="google-ad-slot" id="googleAdInContent{% if ad_number %}{{ ad_number }}{% endif %}">
+            <!-- Google Adsense kodu buraya eklenecek -->
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXX"
+                data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if position == "left_sidebar" %}
+<!-- Sol Taraf Reklam (Yapışkan) -->
+<div class="sticky-ad-left d-none d-xl-block">
+    <div class="ad-label">Reklam</div>
+    <div class="google-ad-slot-vertical" id="googleAdLeft">
+        <!-- Google Adsense kodu buraya eklenecek -->
+        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX"
+            data-ad-format="auto"></ins>
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+</div>
+{% endif %}
+
+{% if position == "right_sidebar" %}
+<!-- Sağ Taraf Reklam (Yapışkan) -->
+<div class="sticky-ad-right d-none d-xl-block">
+    <div class="ad-label">Reklam</div>
+    <div class="google-ad-slot-vertical" id="googleAdRight">
+        <!-- Google Adsense kodu buraya eklenecek -->
+        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX"
+            data-ad-format="auto"></ins>
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+</div>
+{% endif %}

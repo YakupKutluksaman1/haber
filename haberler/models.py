@@ -18,6 +18,21 @@ class Kategori(models.Model):
     def __str__(self):
         return self.ad
 
+class HaberKaynagi(models.Model):
+    ad = models.CharField(max_length=100)
+    url = models.URLField(verbose_name="Kaynak URL")
+    aktif = models.BooleanField(default=True)
+    aranan_kelimeler = models.TextField(blank=True, help_text="Aramak istediğiniz anahtar kelimeleri virgülle ayırarak yazın. Boş bırakırsanız tüm haberler çekilir.")
+    kategori = models.ForeignKey(Kategori, on_delete=models.SET_NULL, null=True, blank=True, related_name='haber_kaynaklari')
+    son_kontrol = models.DateTimeField(null=True, blank=True)
+    
+    def __str__(self):
+        return self.ad
+    
+    class Meta:
+        verbose_name = "Haber Kaynağı"
+        verbose_name_plural = "Haber Kaynakları"
+
 class Haber(models.Model):
     baslik = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200, unique=True, blank=True)
@@ -35,6 +50,9 @@ class Haber(models.Model):
     yayinda = models.BooleanField(default=True, verbose_name="Yayında")
     goruntulenme_sayisi = models.PositiveIntegerField(default=0, verbose_name="Görüntülenme Sayısı")
     manset = models.BooleanField(default=False, verbose_name="Manşet Haber", help_text="Bu haber manşette gösterilsin mi?")
+    kaynak = models.ForeignKey(HaberKaynagi, on_delete=models.SET_NULL, null=True, blank=True, related_name='haberler')
+    kaynak_url = models.URLField(verbose_name="Orijinal URL", blank=True, null=True)
+    otomatik_eklendi = models.BooleanField(default=False, verbose_name="Otomatik Eklendi")
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -51,6 +69,10 @@ class Haber(models.Model):
             self.yayin_tarihi = timezone.now()
             
         super().save(*args, **kwargs)
+
+    def get_yazar_adi(self):
+        """Yazarın tam adını döndürür. Ad ve soyad yoksa kullanıcı adını döndürür."""
+        return f"{self.yazar.first_name} {self.yazar.last_name}" if self.yazar.first_name or self.yazar.last_name else self.yazar.username
 
     def __str__(self):
         return self.baslik
@@ -71,7 +93,8 @@ class Yorum(models.Model):
         ordering = ['-olusturulma_tarihi']
 
     def __str__(self):
-        return f"{self.yazar.username} - {self.haber.baslik[:50]}"
+        yazar_adi = f"{self.yazar.first_name} {self.yazar.last_name}" if self.yazar.first_name or self.yazar.last_name else self.yazar.username
+        return f"{yazar_adi} - {self.haber.baslik[:50]}"
 
 class Ilan(models.Model):
     DURUM_SECENEKLERI = (

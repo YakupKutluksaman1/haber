@@ -3,6 +3,10 @@
 {% block title %}{{ kategori }} Haberleri - Haber Portalı{% endblock %}
 
 {% block content %}
+<!-- Yan reklamlar -->
+{% include 'haberler/includes/ads.html' with position="left_sidebar" %}
+{% include 'haberler/includes/ads.html' with position="right_sidebar" %}
+
 <div class="container">
     <!-- Kategori Başlık Bölümü -->
     <div class="row mb-4">
@@ -23,6 +27,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Üst Reklam Alanı -->
+    {% include 'haberler/includes/ads.html' with position="top" %}
 
     <!-- Son 10 Haber Slider -->
     <div class="row mb-4">
@@ -109,10 +116,6 @@
                                                             <div class="featured-news-meta">
                                                                 <div class="d-flex align-items-center gap-4">
                                                                     <span>
-                                                                        <i class="bi bi-eye me-2"></i>
-                                                                        {{ haber.goruntulenme_sayisi }} görüntülenme
-                                                                    </span>
-                                                                    <span>
                                                                         <i class="bi bi-calendar me-2"></i>
                                                                         {{ haber.yayin_tarihi|date:"d F Y" }}
                                                                     </span>
@@ -180,6 +183,9 @@
         </div>
     </div>
 
+    <!-- Orta Reklam Alanı -->
+    {% include 'haberler/includes/ads.html' with position="middle" %}
+
     <!-- Haber Listesi -->
     <div class="row">
         {% for haber in haberler %}
@@ -206,13 +212,8 @@
                     <h5 class="card-title">{{ haber.baslik }}</h5>
                     <p class="card-text">{{ haber.ozet|default:haber.icerik|truncatewords:20 }}</p>
                     <div class="d-flex justify-content-between align-items-center mt-3">
-                        <div class="text-muted">
-                            <small>
-                                <i class="bi bi-eye"></i> {{ haber.goruntulenme_sayisi }}
-                            </small>
-                        </div>
                         <small class="text-muted">
-                            <i class="bi bi-person"></i> {{ haber.yazar.get_full_name|default:haber.yazar.username }}
+                            <i class="bi bi-person"></i> {{ haber.get_yazar_adi }}
                         </small>
                     </div>
                 </div>
@@ -224,8 +225,15 @@
                 </div>
             </div>
         </div>
+        {% if forloop.counter|divisibleby:3 and not forloop.last %}
+        <!-- Her 3 haberden sonra reklam alanı -->
+        {% include 'haberler/includes/ads.html' with position="in_content" ad_number=forloop.counter %}
+        {% endif %}
         {% endfor %}
     </div>
+
+    <!-- Alt Reklam Alanı -->
+    {% include 'haberler/includes/ads.html' with position="bottom" %}
 
     <!-- Sayfalama -->
     {% if haberler.paginator.num_pages > 1 %}

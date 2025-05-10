@@ -463,16 +463,6 @@
                                 {{ haber.icerik|striptags|truncatewords:15 }}
                                 {% endif %}
                             </p>
-                            <div class="news-stats">
-                                <div class="news-views">
-                                    <i class="bi bi-eye"></i> {{ haber.goruntulenme_sayisi }}
-                                </div>
-                                {% if haber.yorumlar %}
-                                <div class="news-comments">
-                                    <i class="bi bi-chat-left-text"></i> {{ haber.yorumlar.count }}
-                                </div>
-                                {% endif %}
-                            </div>
                         </div>
                     </a>
                 </div>
@@ -574,7 +564,6 @@
                     </h6>
                     <div class="benzer-haber-meta">
                         <span><i class="bi bi-calendar3"></i> {{ haber.yayin_tarihi|date:"d F Y" }}</span>
-                        <span class="ms-2"><i class="bi bi-eye"></i> {{ haber.goruntulenme_sayisi }}</span>
                     </div>
                 </div>
                 {% endfor %}
@@ -611,7 +600,6 @@
                         </h6>
                         <div class="benzer-haber-meta">
                             <span><i class="bi bi-calendar3"></i> {{ haber.yayin_tarihi|date:"d F Y" }}</span>
-                            <span class="ms-2"><i class="bi bi-eye"></i> {{ haber.goruntulenme_sayisi }}</span>
                         </div>
                     </div>
                     {% endfor %}
@@ -636,7 +624,6 @@
                     </h6>
                     <div class="benzer-haber-meta">
                         <span><i class="bi bi-calendar3"></i> {{ benzer.yayin_tarihi|date:"d F Y" }}</span>
-                        <span class="ms-2"><i class="bi bi-eye"></i> {{ benzer.goruntulenme_sayisi }}</span>
                     </div>
                 </div>
                 {% endfor %}

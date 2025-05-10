@@ -1,0 +1,154 @@
+# TEKHA Haber Çekme Uygulaması - Linux Kurulum Rehberi
+
+Bu rehber, TEKHA haber çekme uygulamasının Linux sunucuda kurulumu ve otomatik çalışması için gerekli adımları anlatmaktadır.
+
+## 1. Gereksinimler
+
+- Python 3.8 veya daha yüksek
+- pip (Python paket yöneticisi)
+- virtualenv veya venv (sanal ortam)
+- Git (opsiyonel)
+- Cron (zamanlanmış görevler için)
+
+## 2. Kurulum Adımları
+
+### 2.1. Sistemi Güncelleme
+
+Öncelikle sisteminizi güncelleyin:
+
+```bash
+sudo apt update
+sudo apt upgrade -y
+```
+
+### 2.2. Python ve Gerekli Araçları Kurma
+
+```bash
+sudo apt install -y python3 python3-pip python3-venv git
+```
+
+### 2.3. Proje Dosyalarını İndirme
+
+Git kullanarak:
+
+```bash
+git clone <repo-url> /path/to/haber/project
+cd /path/to/haber/project
+```
+
+veya dosyaları manuel olarak sunucuya yükleyin.
+
+### 2.4. Sanal Ortam Oluşturma ve Aktivasyon
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 2.5. Bağımlılıkları Yükleme
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2.6. Veritabanı Yapılandırması
+
+Django migrasyonlarını uygulayın:
+
+```bash
+python manage.py migrate
+```
+
+### 2.7. Statik Dosyaları Toplama
+
+```bash
+python manage.py collectstatic --noinput
+```
+
+### 2.8. Bash Betiğine Çalıştırma İzni Verme
+
+```bash
+chmod +x fetch_tekha_cron.sh
+```
+
+## 3. Bash Betiğini Düzenleme
+
+`fetch_tekha_cron.sh` dosyasında proje yolunu ve sanal ortam yolunu düzenleyin:
+
+```bash
+nano fetch_tekha_cron.sh
+```
+
+Aşağıdaki satırları güncelleyin:
+
+- `cd /path/to/haber/project` -> Gerçek proje yolunuzu girin
+- `source /path/to/venv/bin/activate` -> Sanal ortam yolunuzu girin ve yorum işaretini kaldırın
+
+## 4. Cron Görevi Oluşturma
+
+Her 2 saatte bir çalışacak cron görevi ekleyin:
+
+```bash
+crontab -e
+```
+
+Aşağıdaki satırı ekleyin:
+
+```
+0 */2 * * * /path/to/haber/project/fetch_tekha_cron.sh
+```
+
+## 5. Manuel Test Etme
+
+Komutun düzgün çalıştığını doğrulamak için manuel olarak çalıştırın:
+
+```bash
+./fetch_tekha_cron.sh
+```
+
+## 6. Logları İzleme
+
+Log dosyaları `logs/` klasöründe tutulur. En son logları görmek için:
+
+```bash
+ls -la logs/
+cat logs/tekha_fetch_<en-yeni-tarih>.log
+```
+
+## 7. Sorun Giderme
+
+### 7.1. İzin Hatası
+
+Eğer "Permission denied" hatası alırsanız:
+
+```bash
+chmod +x fetch_tekha_cron.sh
+chmod -R 755 logs/
+```
+
+### 7.2. Cron Çalışmıyor
+
+Cron servisinin çalıştığını kontrol edin:
+
+```bash
+sudo systemctl status cron
+```
+
+### 7.3. Python Modül Hatası
+
+Bağımlılıkların doğru yüklendiğinden emin olun:
+
+```bash
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+## 8. Güvenlik Notları
+
+- Duyarlı bilgileri (veritabanı şifreleri vb.) `.env` dosyasında saklayın
+- Sunucunuzda yeterli disk alanı olduğundan emin olun
+- Logların birikmemesi için düzenli olarak eski logları temizleyin
+
+## 9. İletişim ve Destek
+
+Sorun yaşarsanız veya yardıma ihtiyacınız olursa, lütfen [e-posta adresi] adresinden iletişime geçin. 

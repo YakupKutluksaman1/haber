@@ -1,0 +1,37 @@
+Windows Görev Zamanlayıcı Ayarlama Talimatları
+=======================================
+
+Windows'ta her 2 saatte bir tekha_fetch_cron.bat dosyasını çalıştırmak için aşağıdaki adımları izleyin:
+
+1. Başlat menüsünü açın ve "Task Scheduler" (Görev Zamanlayıcı) yazın ve açın.
+
+2. Sağdaki "Actions" (Eylemler) panelinde "Create Basic Task" (Temel Görev Oluştur) seçeneğine tıklayın.
+
+3. "Name" (İsim) alanına "TEKHA Haber Çekme Görevi" ve istediğiniz bir açıklama girin, ardından "Next" (İleri) düğmesine tıklayın.
+
+4. "Trigger" (Tetikleyici) ekranında "Daily" (Günlük) seçeneğini seçin ve "Next" (İleri) düğmesine tıklayın.
+
+5. Başlangıç saatini seçin ve "Recur every" (Her ... tekrarla) kısmını "1" olarak bırakın. "Next" (İleri) düğmesine tıklayın.
+
+6. "Action" (Eylem) ekranında "Start a program" (Bir program başlat) seçeneğini seçin ve "Next" (İleri) düğmesine tıklayın.
+
+7. "Program/script" alanına, oluşturduğunuz fetch_tekha_cron.bat dosyasının tam yolunu girin veya "Browse" (Göz at) düğmesini kullanarak dosyayı seçin:
+   `C:\Users\yakup\OneDrive\Masaüstü\haber-master (1)\haber\fetch_tekha_cron.bat`
+
+8. "Next" (İleri) düğmesine ve ardından "Finish" (Bitir) düğmesine tıklayın.
+
+9. Oluşturulan görevi bulun, sağ tıklayın ve "Properties" (Özellikler) seçeneğini seçin.
+
+10. "Triggers" (Tetikleyiciler) sekmesine tıklayın, mevcut tetikleyiciyi seçin ve "Edit" (Düzenle) düğmesine tıklayın.
+
+11. "Advanced settings" (Gelişmiş ayarlar) bölümünü genişletin.
+
+12. "Repeat task every" (Görevi her ... tekrarla) seçeneğini işaretleyin ve "2 hours" (2 saat) olarak ayarlayın.
+
+13. "for a duration of" (süre boyunca) seçeneğini "Indefinitely" (Süresiz) olarak ayarlayın.
+
+14. "OK" (Tamam) düğmesine tıklayın ve görev özelliklerini kapatın.
+
+Artık görev her 2 saatte bir otomatik olarak çalışacaktır.
+
+Not: Bilgisayarın görevin çalışması gereken zamanlarda açık olması gerektiğini unutmayın. Kapalıysa, bilgisayar tekrar açıldığında görev çalışacaktır. 

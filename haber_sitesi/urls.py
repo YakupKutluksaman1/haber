@@ -19,11 +19,19 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import RedirectView
+from haberler.views import fetch_tekha_news
 
+# Özel admin URL'lerini admin.site.urls'den önce tanımla
 urlpatterns = [
+    # Admin sayfasındaki haber çekme işlemi için URL
+    path('haberleri-cek/', fetch_tekha_news, name='fetch_tekha_news_admin'),
+    # Standart admin URLs
     path('admin/', admin.site.urls),
+    # Uygulamanın ana URL'leri
     path('', include('haberler.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
+    path('favicon.ico', RedirectView.as_view(url='/static/img/favicon.ico')),
 ]
 
 if settings.DEBUG:

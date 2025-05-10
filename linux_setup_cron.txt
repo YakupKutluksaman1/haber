@@ -1,0 +1,53 @@
+Linux Sunucuda Cron Görevini Ayarlama Talimatları
+================================================
+
+Linux sunucunuzdaki cron sistemini kullanarak her 2 saatte bir haberleri otomatik çekmek için aşağıdaki adımları izleyin:
+
+1. İlk olarak bash betiğine çalıştırma izni verin:
+```bash
+chmod +x /path/to/haber/project/fetch_tekha_cron.sh
+```
+
+2. Sunucuya SSH ile bağlanın ve crontab'ı düzenlemek için aşağıdaki komutu çalıştırın:
+```bash
+crontab -e
+```
+
+3. Açılan editörde aşağıdaki satırı ekleyin (her 2 saatte bir çalışacak şekilde):
+```
+0 */2 * * * /path/to/haber/project/fetch_tekha_cron.sh
+```
+
+Bu satırın anlamı:
+- `0`: Saatin başında (0. dakikada)
+- `*/2`: Her 2 saatte bir
+- `* * *`: Her gün, her ay, haftanın her günü
+- `/path/to/haber/project/fetch_tekha_cron.sh`: Çalıştırılacak betik
+
+4. Değişiklikleri kaydedin ve editörden çıkın (nano kullanıyorsanız CTRL+O, ardından CTRL+X).
+
+5. Cron görevini kontrol etmek için:
+```bash
+crontab -l
+```
+
+Not: Linux sunucunuzun saati ve zaman dilimi doğru ayarlanmalıdır. Kontrol etmek için:
+```bash
+date
+```
+
+Ek Notlar:
+---------
+1. fetch_tekha_cron.sh dosyasının içindeki yolları düzenlemeyi unutmayın:
+   - `/path/to/haber/project` kısmını gerçek proje yoluyla değiştirin
+   - Eğer Python sanal ortamı kullanıyorsanız, ilgili satırı aktifleştirin
+
+2. Cron girdisinin oluşturduğu e-posta bildirimlerini almak istiyorsanız, aşağıdaki gibi MAILTO: satırını ekleyin:
+```
+MAILTO="email@example.com"
+0 */2 * * * /path/to/haber/project/fetch_tekha_cron.sh
+```
+
+3. Sunucunuz 7/24 çalışıyorsa, bu ayarlar yeterlidir. Ancak sunucu yeniden başlatılırsa, cron görevlerinin yeniden başladığından emin olun.
+
+4. Cron görevlerinin çalışma durumunu kontrol etmek için logs/ dizinindeki log dosyalarını inceleyebilirsiniz. 

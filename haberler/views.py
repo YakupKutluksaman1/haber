@@ -10,80 +10,194 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
+from django.core.cache import cache
+import xml.etree.ElementTree as ET
+import json
+from bs4 import BeautifulSoup
+import re
+from django.http import HttpResponse
+from django.contrib.admin.views.decorators import staff_member_required
+from django.core.management import call_command
+
+# BIST veri kaynakları - en güvenilir birkaç kaynak
+bist_sources = [
+    {
+        'name': 'Borsa İstanbul Resmi',
+        'url': 'https://www.borsaistanbul.com/tr/endeks-detay/1000/bist-100',
+        'regex': r'Değer[^>]*>[^>]*>([0-9]{1,3}[.,][0-9]{3}[.,][0-9]{2})',
+        'process': lambda text: text.replace('.', '').replace(',', '.').strip()
+    },
+    {
+        'name': 'Bloomberg HT Son Fiyat',
+        'url': 'https://www.bloomberght.com/borsa',
+        'regex': r'BIST\s*100\s*Endeks[^0-9]*([0-9]{1,3}[.,][0-9]{3}[.,][0-9]{2}|[0-9]{2,5}[.,][0-9]{2})',
+        'process': lambda text: text.replace('.', '').replace(',', '.').strip()
+    }
+]
 
 def get_financial_data():
     try:
-        # Döviz sembolleri
-        usd_try = yf.Ticker("USDTRY=X")
-        eur_try = yf.Ticker("EURTRY=X")
-        gbp_try = yf.Ticker("GBPTRY=X")
+        from datetime import datetime
+        from django.utils import timezone
+        import xml.etree.ElementTree as ET
+        import re
         
-        # Altın sembolü (USD cinsinden)
-        gold_usd = yf.Ticker("GC=F")
-        
-        # BIST 100 sembolü
-        bist = yf.Ticker("XU100.IS")
-        
-        # Son 3 günlük verileri al
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=3)
-        
-        # Döviz verilerini al
-        usd_data = usd_try.history(start=start_date, end=end_date, interval="1d")
-        eur_data = eur_try.history(start=start_date, end=end_date, interval="1d")
-        gbp_data = gbp_try.history(start=start_date, end=end_date, interval="1d")
-        
-        # Altın verilerini al (USD cinsinden)
-        gold_data = gold_usd.history(start=start_date, end=end_date, interval="1d")
-        
-        # BIST 100 verilerini al
-        bist_data = bist.history(start=start_date, end=end_date, interval="1d")
-        
-        # Veri kontrolü
-        if usd_data.empty or eur_data.empty or gbp_data.empty or gold_data.empty or bist_data.empty:
-            raise Exception("Veri boş geldi")
-        
-        # Son kapanış fiyatlarını al
-        usd_try_rate = round(usd_data['Close'].iloc[-1], 4)
-        eur_try_rate = round(eur_data['Close'].iloc[-1], 4)
-        gbp_try_rate = round(gbp_data['Close'].iloc[-1], 4)
-        gold_usd_rate = round(gold_data['Close'].iloc[-1], 2)
-        bist_value = round(bist_data['Close'].iloc[-1], 2)
-        
-        # Altını gram cinsine çevir (1 ons = 31.1034768 gram)
-        gold_gram_usd = gold_usd_rate / 31.1034768
-        # Gram altını TL'ye çevir
-        gold_try = round(gold_gram_usd * usd_try_rate, 2)
-        
-        # Son güncelleme zamanını al
-        last_updated = timezone.now().strftime('%H:%M')
-        
-        # Veri doğrulama
-        if not all(isinstance(x, (int, float)) for x in [usd_try_rate, eur_try_rate, gbp_try_rate, gold_try, bist_value]):
-            raise Exception("Geçersiz veri tipi")
-        
-        data = {
-            'usd': usd_try_rate,
-            'eur': eur_try_rate,
-            'gbp': gbp_try_rate,
-            'gold': gold_try,
-            'bist': bist_value,
-            'last_updated': last_updated
+        # GÜNCEL FİNANSAL VERİLER - Bu değerler sadece son çare olarak kullanılır
+        # Son güncelleme tarihi: 10 Mayıs 2025
+        CURRENT_VALUES = {
+            'usd': 38.70,  # USD/TRY
+            'eur': 43.53,  # EUR/TRY
+            'gbp': 51.42,  # GBP/TRY
+            'gold': 4142.72,  # Gram altın TL
+            'bist': 9390.51  # BIST 100 endeksi - Borsa İstanbul resmi siteden alındı
         }
         
-        # Debug için verileri yazdır
-        print("Çekilen veriler:", data)
-        return data
+        # Her zaman API'lerden taze veri çekilecek
+        print("API'lerden taze veriler çekiliyor...")
+            
+        # Veri çekme işlemleri
+        result_data = {}
+        
+        # 1. TCMB'den günlük döviz kurlarını çek (hızlı ve güvenilir)
+        try:
+            # TCMB XML servisi - Türkiye'nin resmi kur verileri
+            tcmb_url = "https://www.tcmb.gov.tr/kurlar/today.xml"
+            response = requests.get(tcmb_url, timeout=5)
+            
+            if response.status_code == 200:
+                # XML verisini parse et
+                root = ET.fromstring(response.content)
+                
+                # Döviz kurlarını bul - Efektif Satış değeri
+                usd_try = float(root.find("./Currency[@Kod='USD']/BanknoteSelling").text.replace(',', '.'))
+                eur_try = float(root.find("./Currency[@Kod='EUR']/BanknoteSelling").text.replace(',', '.'))
+                gbp_try = float(root.find("./Currency[@Kod='GBP']/BanknoteSelling").text.replace(',', '.'))
+                
+                # Döviz kurlarını result_data'ya ekle
+                result_data['usd'] = round(usd_try, 2)
+                result_data['eur'] = round(eur_try, 2)
+                result_data['gbp'] = round(gbp_try, 2)
+                
+                print(f"TCMB'den döviz kurları çekildi: USD={usd_try}, EUR={eur_try}, GBP={gbp_try}")
+                
+            else:
+                # TCMB başarısız olursa sabit değerleri kullan
+                result_data['usd'] = CURRENT_VALUES['usd']
+                result_data['eur'] = CURRENT_VALUES['eur']
+                result_data['gbp'] = CURRENT_VALUES['gbp']
+                print(f"TCMB API hatası, sabit değerler kullanıldı: USD={result_data['usd']}, EUR={result_data['eur']}, GBP={result_data['gbp']}")
+                
+        except Exception as tcmb_error:
+            print(f"TCMB veri çekme hatası: {str(tcmb_error)}")
+            # TCMB başarısız olursa sabit değerleri kullan
+            result_data['usd'] = CURRENT_VALUES['usd']
+            result_data['eur'] = CURRENT_VALUES['eur']
+            result_data['gbp'] = CURRENT_VALUES['gbp']
+            print(f"TCMB API hatası, sabit değerler kullanıldı: USD={result_data['usd']}, EUR={result_data['eur']}, GBP={result_data['gbp']}")
+        
+        # 2. Altın ve BIST verilerini web scraping ile çek
+        try:
+            from bs4 import BeautifulSoup
+            
+            # ------------------------------- ALTIN VERİLERİ -------------------------------
+            # Daha hızlı ve güvenilir olan kaynaklardan altın verisi çekmeyi deneyelim
+            # Altın veri kaynakları - öncelik sırasına göre
+            gold_sources = [
+                {
+                    'name': 'Bigpara',
+                    'url': 'https://bigpara.hurriyet.com.tr/altin/gram-altin-fiyati/',
+                    'selector': 'span.value',
+                    'process': lambda text: text.replace('.', '').replace(',', '.')
+                }
+            ]
+            
+            # Altın verisi için sırayla tüm kaynakları dene
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+            
+            for source in gold_sources:
+                if 'gold' in result_data:
+                    break  # Eğer altın verisi bulunmuşsa diğer kaynaklara bakma
+                    
+                try:
+                    print(f"{source['name']} altın verisi deneniyor...")
+                    gold_response = requests.get(source['url'], headers=headers, timeout=8)
+                    
+                    if gold_response.status_code == 200:
+                        soup = BeautifulSoup(gold_response.content, 'html.parser')
+                        gold_element = soup.select_one(source['selector'])
+                        
+                        if gold_element and gold_element.text.strip():
+                            gold_text = source['process'](gold_element.text.strip())
+                            
+                            if gold_text and re.match(r'^\d+(\.\d+)?$', gold_text):
+                                gold_try = float(gold_text)
+                                result_data['gold'] = round(gold_try, 2)
+                                print(f"{source['name']}'den altın fiyatı başarıyla çekildi: {gold_try}")
+                            else:
+                                print(f"{source['name']} altın verisi sayısal değil: '{gold_text}'")
+                        else:
+                            print(f"{source['name']} altın elementi bulunamadı")
+                    else:
+                        print(f"{source['name']} HTTP hatası: {gold_response.status_code}")
+                        
+                except Exception as gold_error:
+                    print(f"{source['name']} altın veri çekme hatası: {str(gold_error)}")
+            
+            # Altın verisi çekilemediyse sabit değerleri kullan
+            if 'gold' not in result_data:
+                result_data['gold'] = CURRENT_VALUES['gold']
+                print(f"Altın verisi çekilemedi, sabit değer kullanıldı: {result_data['gold']}")
+            
+            # ------------------------------- BIST VERİLERİ -------------------------------
+            # Borsa İstanbul verilerini çekelim
+            try:
+                bist_value = get_bist_from_web()
+                if bist_value:
+                    result_data['bist'] = bist_value
+                    print(f"BIST 100 değeri başarıyla alındı: {bist_value}")
+                else:
+                    print("BIST verisi çekilemedi, sabit değer kullanılacak")
+                    result_data['bist'] = CURRENT_VALUES['bist']
+            except Exception as bist_error:
+                print(f"BIST veri çekme genel hatası: {str(bist_error)}")
+                result_data['bist'] = CURRENT_VALUES['bist']
+            
+        except ImportError:
+            print("BeautifulSoup (bs4) kütüphanesi yüklü değil, sabit değerler kullanılacak.")
+            # Sabit değerleri kullan
+            result_data['gold'] = CURRENT_VALUES['gold']
+            result_data['bist'] = CURRENT_VALUES['bist']
+        except Exception as scraping_error:
+            print(f"Web scraping hatası: {str(scraping_error)}")
+            # Hata durumunda sabit değerleri kullan
+            if 'gold' not in result_data:
+                result_data['gold'] = CURRENT_VALUES['gold']
+            if 'bist' not in result_data:
+                result_data['bist'] = CURRENT_VALUES['bist']
+        
+        # Eksik değerleri manuel değerlerle doldur (son çare)
+        for key in CURRENT_VALUES.keys():
+            if key not in result_data:
+                result_data[key] = CURRENT_VALUES[key]
+                print(f"{key} için sabit değer kullanıldı: {result_data[key]}")
+        
+        # Son güncelleme saatini ekle
+        result_data['last_updated'] = datetime.now().strftime('%H:%M')
+        
+        print("Güncel finansal veriler toplandı:", result_data)
+        return result_data
         
     except Exception as e:
-        print(f"Veri çekme hatası: {str(e)}")
-        # Hata durumunda varsayılan değerler
+        print(f"Genel veri çekme hatası: {str(e)}")
+        # Genel hata durumunda en güncel değerler
         return {
-            'usd': 32.00,
-            'eur': 35.00,
-            'gbp': 40.00,
-            'gold': 2000,
-            'bist': 10000,
+            'usd': 38.70,
+            'eur': 43.53,
+            'gbp': 51.42,
+            'gold': 4142.72,
+            'bist': 9390.51,  # Borsa İstanbul resmi siteden alınan güncel değer
             'last_updated': timezone.now().strftime('%H:%M')
         }
 
@@ -550,3 +664,184 @@ def cerez_politikasi(request):
     return render(request, 'haberler/sayfalar/cerez-politikasi.html', {
         'kategoriler': kategoriler,
     })
+
+# BIST verilerini getiren fonksiyonu güncelleyerek yeniliyorum
+def get_bist_from_web():
+    # Farklı User-Agent'lar ile deneyelim
+    user_agents = [
+        # Normal tarayıcı - yeni URL için daha etkili olabilir
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
+        # Mobil tarayıcı
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1',
+        # Windows / Chrome
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    ]
+    
+    # Borsa İstanbul sitesinden direkt veri çekmeyi deneyelim
+    try:
+        url = 'https://www.borsaistanbul.com/tr/endeks-detay/1000/bist-100'
+        headers = {
+            'User-Agent': user_agents[0],
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7'
+        }
+        
+        print("Borsa İstanbul sitesinden BIST 100 verisi çekiliyor...")
+        response = requests.get(url, headers=headers, timeout=15)
+        
+        if response.status_code == 200:
+            # HTML içeriğinde BIST 100 değerini arayalım
+            # Tam HTML yapısına göre daha spesifik arama
+            html_content = response.text
+            
+            # BeautifulSoup ile düzgün parse edelim
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(html_content, 'html.parser')
+            
+            # İlk yöntem: Değeri içeren td'yi bulmayı deneyelim
+            # Belirli bir class ile bolder-and-larger class'ına sahip td'leri arayalım
+            value_cells = soup.select('td.bolder-and-larger')
+            if value_cells and len(value_cells) > 0:
+                # İlk bolder-and-larger hücresini alıp, içeriğini temizleyelim
+                value_text = value_cells[0].text.strip()
+                print(f"Borsa İstanbul BIST 100 değeri (class ile): {value_text}")
+                
+                # Değeri sayısal formata çevirelim
+                bist_text = value_text.replace('.', '').replace(',', '.')
+                if bist_text and re.match(r'^\d+(\.\d+)?$', bist_text):
+                    bist_value = float(bist_text)
+                    print(f"Borsa İstanbul'dan BIST 100 değeri başarıyla çekildi: {bist_value}")
+                    return round(bist_value, 2)
+            
+            # İkinci yöntem: doğrudan HTML içinde daha spesifik regex kullanarak değeri alalım
+            # HTML yapısını tam olarak arıyoruz: class="bolder-and-larger">9.390,51</td>
+            bist_regex = r'class="bolder-and-larger">\s*([0-9]{1,3}[.,][0-9]{3}[.,][0-9]{2})\s*</td>'
+            bist_match = re.search(bist_regex, html_content)
+            
+            if bist_match:
+                bist_value_text = bist_match.group(1).strip()
+                print(f"Borsa İstanbul BIST 100 değeri (regex ile): {bist_value_text}")
+                
+                # Değeri sayısal formata çevirelim
+                bist_text = bist_value_text.replace('.', '').replace(',', '.')
+                if bist_text and re.match(r'^\d+(\.\d+)?$', bist_text):
+                    bist_value = float(bist_text)
+                    print(f"Borsa İstanbul'dan BIST 100 değeri başarıyla çekildi: {bist_value}")
+                    return round(bist_value, 2)
+            
+            # Üçüncü yöntem: Değer hücresini içeren tabloyu bulmayı deneyelim
+            tables = soup.find_all('table')
+            for table in tables:
+                rows = table.find_all('tr')
+                for row in rows:
+                    cells = row.find_all('td')
+                    if cells and len(cells) > 0:
+                        first_cell_text = cells[0].text.strip()
+                        if 'değer' in first_cell_text.lower():
+                            # Değer satırı bulundu, ikinci hücredeki değeri alalım
+                            if len(cells) > 1:
+                                value_text = cells[1].text.strip()
+                                print(f"Borsa İstanbul BIST 100 değeri (tablo ile): {value_text}")
+                                
+                                # Değeri sayısal formata çevirelim
+                                bist_text = value_text.replace('.', '').replace(',', '.')
+                                if bist_text and re.match(r'^\d+(\.\d+)?$', bist_text):
+                                    bist_value = float(bist_text)
+                                    print(f"Borsa İstanbul'dan BIST 100 değeri başarıyla çekildi: {bist_value}")
+                                    return round(bist_value, 2)
+            
+            # Dördüncü yöntem: Doğrudan Güncel Endeks Değerleri başlığı altındaki ilk sayıyı alalım
+            # Tüm sayısal değerleri bul
+            value_pattern = r'([0-9]{1,2}[.,][0-9]{3}[.,][0-9]{2})'
+            value_matches = re.findall(value_pattern, html_content)
+            
+            if value_matches:
+                # İlk eşleşen değeri kullanalım (muhtemelen Güncel Endeks Değerinin altındaki ilk değer)
+                value_text = value_matches[0]
+                print(f"Borsa İstanbul'da bulunan ilk BIST benzeri değer: {value_text}")
+                
+                # Değeri sayısal formata çevirelim
+                bist_text = value_text.replace('.', '').replace(',', '.')
+                if bist_text and re.match(r'^\d+(\.\d+)?$', bist_text):
+                    bist_value = float(bist_text)
+                    if 1000 <= bist_value <= 20000:  # BIST 100 değerleri genellikle bu aralıkta
+                        print(f"Borsa İstanbul'dan BIST 100 değeri başarıyla çekildi: {bist_value}")
+                        return round(bist_value, 2)
+            
+            print("Borsa İstanbul sitesinden BIST 100 değeri bulunamadı")
+        else:
+            print(f"Borsa İstanbul sitesi HTTP hatası: {response.status_code}")
+    except Exception as error:
+        print(f"Borsa İstanbul veri çekme hatası: {str(error)}")
+    
+    # Bloomberg HT'den veri çekmeyi deneyelim (yedek kaynak)
+    try:
+        for i, source in enumerate(bist_sources):
+            if 'bloomberg' in source['name'].lower():
+                user_agent = user_agents[i % len(user_agents)]
+                
+                headers = {
+                    'User-Agent': user_agent,
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                    'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7',
+                    'Referer': 'https://www.google.com/'
+                }
+                
+                print(f"{source['name']} BIST verisi deneniyor...")
+                response = requests.get(source['url'], headers=headers, timeout=15)
+                
+                if response.status_code == 200:
+                    # Sayfanın metnini düşük harfe çevirelim
+                    page_text = response.text.lower()
+                    
+                    # Normal regex araması
+                    matches = re.search(source['regex'], page_text)
+                    if matches:
+                        # Regex paternindeki grupları kontrol et
+                        groups = matches.groups()
+                        value_group = groups[-1] if len(groups) > 1 else groups[0]
+                        
+                        bist_text = source['process'](value_group)
+                        
+                        # Sayısal değer olduğundan emin olalım
+                        if bist_text and re.match(r'^\d+(\.\d+)?$', bist_text):
+                            bist_value = float(bist_text)
+                            
+                            # BIST 100 değeri genellikle 1000-20000 arasındadır
+                            if 1000 <= bist_value <= 20000:
+                                print(f"{source['name']}'den BIST 100 değeri başarıyla çekildi: {bist_value}")
+                                return round(bist_value, 2)
+                            else:
+                                print(f"{source['name']} bulunan değer BIST 100 aralığında değil: {bist_value}")
+                        else:
+                            print(f"{source['name']} bulunan değer sayısal değil: '{value_group}' -> '{bist_text}'")
+    except Exception as error:
+        print(f"Bloomberg HT veri çekme hatası: {str(error)}")
+    
+    # Hiçbir kaynaktan veri alamadık
+    print("Hiçbir kaynaktan BIST verisi çekilemedi")
+    return None
+
+# Collectapi.com'dan BIST değerini alma yardımcı fonksiyonu - artık kullanılmıyor
+def get_bist_from_collectapi():
+    # collectapi'yi artık kullanmıyoruz çünkü ücretsiz değil
+    print("Collectapi ücretsiz kullanılamıyor, bu kaynak atlandı")
+    return None
+
+# Yahoo Finance API'den BIST değerini alma yardımcı fonksiyonu - artık kullanılmıyor
+def get_bist_from_yahoo_api():
+    print("Yahoo Finance API rate limit sorunları yaşıyor, bu kaynak atlandı")
+    return None
+
+@staff_member_required
+def fetch_tekha_news(request):
+    """Admin kullanıcıları için TEKHA'dan haberleri çeken basit bir view"""
+    try:
+        # Haber çekme komutunu çağır
+        call_command('fetch_tekha_news', limit=10, force_update=False, verbosity=0)
+        messages.success(request, "Haberler başarıyla çekildi!")
+    except Exception as e:
+        messages.error(request, f"Haber çekme sırasında hata oluştu: {str(e)}")
+    
+    # Admin anasayfasına yönlendir
+    return redirect('admin:index')

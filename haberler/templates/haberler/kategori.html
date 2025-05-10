@@ -30,7 +30,7 @@
                 <p class="card-text">{{ haber.icerik|truncatewords:30 }}</p>
                 <p class="text-muted">
                     <small>
-                        <i class="bi bi-person"></i> {{ haber.yazar }} |
+                        <i class="bi bi-person"></i> {{ haber.get_yazar_adi }} |
                         <i class="bi bi-calendar"></i> {{ haber.yayin_tarihi|date:"d F Y" }}
                     </small>
                 </p>

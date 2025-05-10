@@ -14,17 +14,8 @@
                 </div>
                 <h3 class="news-title">{{ haber.baslik }}</h3>
                 <p class="news-excerpt">{{ haber.icerik|striptags|truncatewords:20 }}</p>
-                <div class="news-stats">
-                    <span class="news-views"><i class="fas fa-eye"></i> {{ haber.goruntulenme_sayisi }}</span>
-                    <span class="news-comments"><i class="fas fa-comment"></i>
-                        {% if haber.yorum_sayisi is not None %}
-                        {{ haber.yorum_sayisi }}
-                        {% elif haber.yorumlar.count is defined %}
-                        {{ haber.yorumlar.count }}
-                        {% else %}
-                        0
-                        {% endif %}
-                    </span>
+                <div class="news-footer">
+                    <span class="news-author"><i class="bi bi-person"></i> {{ haber.get_yazar_adi }}</span>
                 </div>
             </div>
         </a>

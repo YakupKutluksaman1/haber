@@ -18,4 +18,5 @@ urlpatterns = [
     path('gizlilik-politikasi/', views.gizlilik_politikasi, name='gizlilik_politikasi'),
     path('kvkk/', views.kvkk, name='kvkk'),
     path('cerez-politikasi/', views.cerez_politikasi, name='cerez_politikasi'),
+    path('admin/fetch-tekha-news/', views.fetch_tekha_news, name='fetch_tekha_news'),
 ] 
