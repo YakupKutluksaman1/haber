@@ -144,7 +144,7 @@
                             <div class="d-flex align-items-center">
                                 <div class="news-number">{{ forloop.counter }}</div>
                                 <div class="news-content">
-                                    <h6 class="mb-1">{{ haber.baslik }}</h6>
+                                    <h6 class="mb-1">{{ haber.baslik|striptags }}</h6>
                                     <small class="text-muted">{{ haber.yayin_tarihi|time:"H:i" }}</small>
                                 </div>
                             </div>
@@ -174,7 +174,7 @@
                                             {% if haber.kategori %}
                                             <span class="badge bg-ozbel mb-3 px-3 py-2">{{ haber.kategori.ad }}</span>
                                             {% endif %}
-                                            <h2 class="featured-news-title mb-3">{{ haber.baslik }}</h2>
+                                            <h2 class="featured-news-title mb-3">{{ haber.baslik|striptags }}</h2>
                                             <div class="featured-news-excerpt d-none d-md-block mb-4">
                                                 {% if haber.ozet %}
                                                 {{ haber.ozet|striptags|truncatewords:30 }}
@@ -270,7 +270,7 @@
                                     </div>
                                 </div>
                                 <div class="manset-content">
-                                    <h3 class="manset-baslik">{{ haber.baslik }}</h3>
+                                    <h3 class="manset-baslik">{{ haber.baslik|striptags }}</h3>
                                     <p class="manset-excerpt">
                                         {% if haber.ozet %}
                                         {{ haber.ozet|striptags|truncatewords:20 }}
@@ -375,26 +375,21 @@
                         <a href="https://wa.me/905423538726?text=Özbel%20Haber%20reklam%20vitrini%20için%20bilgi%20almak%20istiyorum."
                             target="_blank" class="ilan-link">
                             <div class="ilan-image-wrapper"
-                                style="display: flex; align-items: center; justify-content: center; background-color: #25D366;">
-                                <div class="ilan-no-logo"
-                                    style="background-color: white; color: #25D366; transform: scale(1.5);">
-                                    <i class="bi bi-whatsapp"></i>
-                                </div>
+                                style="display: flex; align-items: center; justify-content: center; flex-direction: column; background-color: #25D366;">
+                                <div class="reklam-baslik">REKLAM VEREBİLİRSİNİZ</div>
+                                <div class="reklam-alt-baslik">VİTRİNİMİZDE YERİNİZİ ALIN</div>
                             </div>
                             <div class="ilan-content">
-                                <h3 class="ilan-firma-adi" style="color: #25D366; font-weight: 700;">İşletmeniz Burada
-                                    Olsun!</h3>
-                                <p class="ilan-faaliyet">Özbel Haber'de işletmenizi tanıtın</p>
-                                <div class="ilan-meta">
-                                    <div class="ilan-adres">
-                                        <i class="bi bi-whatsapp me-1" style="color: #25D366;"></i>
-                                        <span>Hemen iletişime geçin</span>
-                                    </div>
-                                    <div class="ilan-telefon">
-                                        <i class="bi bi-telephone me-1"></i>
-                                        <span>0542 353 8726</span>
-                                    </div>
+                                <h3 class="ilan-firma-adi" style="color: #25D366; font-weight: 700;">Siz de İlan
+                                    Verebilirsiniz!</h3>
+                                <p class="ilan-faaliyet">Özbel Haber reklam vitrinine katılın</p>
+                                <div class="ilan-avantajlar">
+                                    <div><i class="bi bi-check-circle-fill"></i> Geniş okuyucu kitlesine ulaşın</div>
+                                    <div><i class="bi bi-check-circle-fill"></i> Marka bilinirliğinizi artırın</div>
+                                    <div><i class="bi bi-check-circle-fill"></i> Uygun fiyatlarla tanıtım</div>
                                 </div>
+                                <p class="ilan-iletisim-bilgi">Kartı tıklayarak iletişime geçebilirsiniz</p>
+
                             </div>
                         </a>
                     </div>
@@ -453,6 +448,28 @@
 
 <!-- Haberler Öncesi Reklam Alanı -->
 {% include 'haberler/includes/ads.html' with position="middle" %}
+
+<!-- Haberler Başlığı -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="section-baslik">
+            <h3 class="manset-title" style="color: #011e5a;">
+                <i class="bi bi-newspaper me-2"></i>
+                <div class="letter-wave-text">
+                    <span class="wave-letter">H</span>
+                    <span class="wave-letter">A</span>
+                    <span class="wave-letter">B</span>
+                    <span class="wave-letter">E</span>
+                    <span class="wave-letter">R</span>
+                    <span class="wave-letter">L</span>
+                    <span class="wave-letter">E</span>
+                    <span class="wave-letter">R</span>
+                </div>
+            </h3>
+            <div class="section-baslik-divider"></div>
+        </div>
+    </div>
+</div>
 
 <!-- Haber Grid -->
 <div class="row" id="haberler-container">
@@ -1762,7 +1779,10 @@
         border-radius: 10px;
         overflow: hidden;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-        height: auto;
+        height: 340px;
+        /* Daha büyük yükseklik */
+        width: 100%;
+        /* Tam genişlik */
         transition: all 0.3s ease;
         border: 1px solid #eee;
         display: flex;
@@ -1785,9 +1805,8 @@
 
     .ilan-image-wrapper {
         width: 100%;
-        height: 0;
-        padding-bottom: 80%;
-        /* Kare görünümü biraz düşürdük */
+        height: 160px;
+        /* Sabit yükseklik */
         position: relative;
         display: block;
         overflow: hidden;
@@ -1826,8 +1845,8 @@
         display: flex;
         flex-direction: column;
         border-top: 1px solid #f0f0f0;
-        max-height: 150px;
-        /* Daha yüksek içerik alanı */
+        height: 180px;
+        /* Daha büyük içerik alanı */
         overflow: hidden;
     }
 
@@ -2151,14 +2170,14 @@
     /* İlan Ver Özel Stili */
     .ilan-ver-card {
         border: 2px solid #25D366;
-        transform: scale(1.02);
+        /* transform: scale(1.02); */
         transition: all 0.3s ease;
         box-shadow: 0 5px 15px rgba(37, 211, 102, 0.25);
         animation: pulse-green 2s infinite;
     }
 
     .ilan-ver-card:hover {
-        transform: translateY(-8px) scale(1.05);
+        transform: translateY(-5px);
         box-shadow: 0 12px 30px rgba(37, 211, 102, 0.35);
     }
 
@@ -2174,6 +2193,52 @@
         100% {
             box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
         }
+    }
+
+    .ilan-avantajlar {
+        margin: 10px 0;
+        font-size: 0.85rem;
+        color: #444;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .ilan-avantajlar i {
+        color: #25D366;
+        font-size: 0.75rem;
+        margin-right: 4px;
+    }
+
+    .reklam-baslik {
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 800;
+        text-align: center;
+        letter-spacing: 1px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        margin-bottom: 5px;
+    }
+
+    .reklam-alt-baslik {
+        color: white;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-align: center;
+        letter-spacing: 1px;
+        background-color: rgba(0, 0, 0, 0.2);
+        padding: 3px 10px;
+        border-radius: 20px;
+    }
+
+    .ilan-iletisim-bilgi {
+        margin-top: 10px;
+        font-size: 0.8rem;
+        color: #666;
+        font-style: italic;
+        border-top: 1px dashed #25D366;
+        padding-top: 8px;
+        text-align: center;
     }
 </style>
 {% endblock %}

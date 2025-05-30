@@ -835,13 +835,26 @@ def get_bist_from_yahoo_api():
 
 @staff_member_required
 def fetch_tekha_news(request):
-    """Admin kullanıcıları için TEKHA'dan haberleri çeken basit bir view"""
+    """Admin kullanıcıları için TEKHA'dan Abdullah Solmaz haberlerini çeken basit bir view"""
     try:
-        # Haber çekme komutunu çağır
+        # Haber çekme komutunu çağır - Abdullah Solmaz haberleri için
         call_command('fetch_tekha_news', limit=10, force_update=False, verbosity=0)
-        messages.success(request, "Haberler başarıyla çekildi!")
+        messages.success(request, "TEKHA sitesinden Abdullah Solmaz haberleri başarıyla çekildi!")
     except Exception as e:
         messages.error(request, f"Haber çekme sırasında hata oluştu: {str(e)}")
+    
+    # Admin anasayfasına yönlendir
+    return redirect('admin:index')
+
+@staff_member_required
+def fetch_all_categories(request):
+    """Admin kullanıcıları için TEKHA'dan tüm kategorilerdeki haberleri çeken view"""
+    try:
+        # Tüm kategorilerden haber çekme komutunu çağır - 5 sayfa ve 100 haber limiti ile
+        call_command('fetch_all_categories', limit=100, max_pages=5, force_update=False, verbosity=0)
+        messages.success(request, "TEKHA sitesinden tüm kategorilerdeki haberler başarıyla çekildi!")
+    except Exception as e:
+        messages.error(request, f"Tüm haberleri çekme sırasında hata oluştu: {str(e)}")
     
     # Admin anasayfasına yönlendir
     return redirect('admin:index')

@@ -56,21 +56,32 @@ class HaberAdmin(admin.ModelAdmin):
         urls = super().get_urls()
         custom_urls = [
             path('fetch-news/', self.admin_site.admin_view(self.fetch_news_view), name='fetch-news'),
+            path('fetch-all-categories/', self.admin_site.admin_view(self.fetch_all_categories_view), name='fetch-all-categories'),
         ]
         return custom_urls + urls
     
     def fetch_news_view(self, request):
         try:
-            # Haber çekme komutunu çağır
+            # Haber çekme komutunu çağır - Abdullah Solmaz haberleri için
             call_command('fetch_tekha_news', limit=50, force_update=False, verbosity=0)
-            self.message_user(request, "Haberler başarıyla çekildi.", messages.SUCCESS)
+            self.message_user(request, "TEKHA sitesinden Abdullah Solmaz haberleri başarıyla çekildi.", messages.SUCCESS)
         except Exception as e:
             self.message_user(request, f"Haber çekme sırasında hata oluştu: {str(e)}", messages.ERROR)
+        return HttpResponseRedirect(reverse('admin:index'))
+    
+    def fetch_all_categories_view(self, request):
+        try:
+            # Tüm kategorilerden haber çekme komutunu çağır
+            call_command('fetch_all_categories', limit=100, force_update=False, verbosity=0)
+            self.message_user(request, "TEKHA sitesinden tüm kategorilerdeki haberler başarıyla çekildi.", messages.SUCCESS)
+        except Exception as e:
+            self.message_user(request, f"Tüm haberleri çekme sırasında hata oluştu: {str(e)}", messages.ERROR)
         return HttpResponseRedirect(reverse('admin:index'))
     
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         extra_context['fetch_news_button'] = True
+        extra_context['fetch_all_categories_button'] = True
         return super().changelist_view(request, extra_context=extra_context)
 
     def yayinla(self, request, queryset):
@@ -85,13 +96,13 @@ class HaberAdmin(admin.ModelAdmin):
     
     def fetch_all_news(self, request, queryset):
         try:
-            # Haber çekme komutunu çağır
+            # Haber çekme komutunu çağır - Abdullah Solmaz haberleri için
             call_command('fetch_tekha_news', limit=50, force_update=False, verbosity=0)
-            self.message_user(request, "Haberler başarıyla çekildi.", messages.SUCCESS)
+            self.message_user(request, "TEKHA sitesinden Abdullah Solmaz haberleri başarıyla çekildi.", messages.SUCCESS)
         except Exception as e:
             self.message_user(request, f"Haber çekme sırasında hata oluştu: {str(e)}", messages.ERROR)
     
-    fetch_all_news.short_description = "TEKHA'dan haberleri çek"
+    fetch_all_news.short_description = "TEKHA'dan Abdullah Solmaz haberlerini çek"
 
 @admin.register(Kategori)
 class KategoriAdmin(admin.ModelAdmin):
@@ -158,7 +169,7 @@ class HaberKaynagiAdmin(admin.ModelAdmin, AdminTemplateMixin):
     list_display = ('ad', 'url', 'aktif', 'son_kontrol')
     list_filter = ('aktif',)
     search_fields = ('ad', 'url')
-    actions = ['get_news_from_source']
+    actions = ['get_news_from_source', 'get_all_categories']
     change_list_template = 'admin/haberler/haberkaynagi/change_list.html'
     
     def get_news_from_source(self, request, queryset):
@@ -169,7 +180,7 @@ class HaberKaynagiAdmin(admin.ModelAdmin, AdminTemplateMixin):
                     # Komut çalıştırma
                     call_command('fetch_tekha_news', limit=50, force_update=False, verbosity=0)
                     total_news += 1
-                    self.message_user(request, f"TEKHA sitesinden haberler çekildi.", messages.SUCCESS)
+                    self.message_user(request, f"TEKHA sitesinden Abdullah Solmaz haberleri çekildi.", messages.SUCCESS)
                 except Exception as e:
                     self.message_user(request, f"Hata: {str(e)}", messages.ERROR)
             else:
@@ -178,4 +189,23 @@ class HaberKaynagiAdmin(admin.ModelAdmin, AdminTemplateMixin):
         if total_news > 0:
             self.message_user(request, f"Toplam {total_news} kaynaktan haberler çekildi.", messages.SUCCESS)
     
-    get_news_from_source.short_description = "Seçili kaynaklardan haberleri çek"
+    get_news_from_source.short_description = "Seçili kaynaklardan Abdullah Solmaz haberlerini çek"
+    
+    def get_all_categories(self, request, queryset):
+        total_news = 0
+        for kaynak in queryset:
+            if 'tekha.com.tr' in kaynak.url:
+                try:
+                    # Komut çalıştırma
+                    call_command('fetch_all_categories', limit=100, max_pages=5, force_update=False, verbosity=0)
+                    total_news += 1
+                    self.message_user(request, f"TEKHA sitesinden tüm kategorilerdeki haberler çekildi.", messages.SUCCESS)
+                except Exception as e:
+                    self.message_user(request, f"Hata: {str(e)}", messages.ERROR)
+            else:
+                self.message_user(request, f"{kaynak.ad} için haber çekme özelliği henüz eklenmedi.", messages.WARNING)
+        
+        if total_news > 0:
+            self.message_user(request, f"Toplam {total_news} kaynaktan tüm kategorilerdeki haberler çekildi.", messages.SUCCESS)
+    
+    get_all_categories.short_description = "Seçili kaynaklardan tüm kategorilerdeki haberleri çek"

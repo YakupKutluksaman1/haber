@@ -2,7 +2,33 @@
 {% load i18n static %}
 
 {% block extrastyle %}{{ block.super }}
-<link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">{% endblock %}
+<link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">
+<style>
+    .haber-button {
+        display: inline-block;
+        width: 300px;
+        color: white;
+        font-weight: bold;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 4px;
+        border: none;
+        margin-right: 10px;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .btn-primary {
+        background-color: #79aec8;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+    }
+</style>
+{% endblock %}
 
 {% block coltype %}colMS{% endblock %}
 
@@ -18,11 +44,16 @@
     <div
         style="margin-bottom: 20px; background-color: #417690; padding: 15px; border-radius: 4px; border: 1px solid #2c5476; color: white;">
         <h3 style="margin-top: 0; color: white; font-size: 18px;">Haber Yönetimi</h3>
-        <p style="color: #f8f8f8; margin-bottom: 15px;">TEKHA'dan en güncel haberleri çekmek için aşağıdaki butona
-            tıklayın.</p>
-        <a href="/haberleri-cek/" class="button"
-            style="display: inline-block; background-color: #79aec8; color: white; font-weight: bold; padding: 10px 20px; text-decoration: none; border-radius: 4px; border: none;">TEKHA'dan
-            Haberleri Çek</a>
+        <p style="color: #f8f8f8; margin-bottom: 15px;">TEKHA'dan en güncel haberleri çekmek için aşağıdaki butonlardan
+            birini seçin.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            <a href="/haberleri-cek/" class="haber-button btn-primary">
+                TEKHA'dan Abdullah Solmaz Haberlerini Çek
+            </a>
+            <a href="/tum-haberleri-cek/" class="haber-button btn-success">
+                TEKHA'dan Tüm Kategorilerdeki Haberleri Çek
+            </a>
+        </div>
     </div>
 
     {% if app_list %}

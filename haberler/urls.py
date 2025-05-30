@@ -18,5 +18,8 @@ urlpatterns = [
     path('gizlilik-politikasi/', views.gizlilik_politikasi, name='gizlilik_politikasi'),
     path('kvkk/', views.kvkk, name='kvkk'),
     path('cerez-politikasi/', views.cerez_politikasi, name='cerez_politikasi'),
-    path('admin/fetch-tekha-news/', views.fetch_tekha_news, name='fetch_tekha_news'),
+    
+    # Haber çekme işlemleri
+    path('haberleri-cek/', views.fetch_tekha_news, name='fetch_tekha_news'),
+    path('tum-haberleri-cek/', views.fetch_all_categories, name='fetch_all_categories'),
 ] 

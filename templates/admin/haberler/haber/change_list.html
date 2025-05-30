@@ -2,17 +2,21 @@
 {% load i18n admin_urls %}
 
 {% block object-tools-items %}
+{% if fetch_news_button %}
 <li>
-    <a href="/haberleri-cek/" class="btn"
+    <a href="{% url 'admin:fetch-news' %}" class="btn"
         style="background-color: #417690; color: white; font-weight: bold; padding: 8px 15px; text-decoration: none; border-radius: 4px; border: none; margin-right: 10px;">
         TEKHA'dan Abdullah Solmaz Haberlerini Çek
     </a>
 </li>
+{% endif %}
+{% if fetch_all_categories_button %}
 <li>
-    <a href="/tum-haberleri-cek/" class="btn"
+    <a href="{% url 'admin:fetch-all-categories' %}" class="btn"
         style="background-color: #28a745; color: white; font-weight: bold; padding: 8px 15px; text-decoration: none; border-radius: 4px; border: none; margin-right: 10px;">
         TEKHA'dan Tüm Kategorilerdeki Haberleri Çek
     </a>
 </li>
+{% endif %}
 {{ block.super }}
 {% endblock %}

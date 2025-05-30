@@ -12,8 +12,14 @@
                     <span class="news-category">{% if haber.kategori %}{{ haber.kategori.ad }}{% endif %}</span>
                     <span class="news-date">{{ haber.yayin_tarihi|date:"d F Y" }}</span>
                 </div>
-                <h3 class="news-title">{{ haber.baslik }}</h3>
-                <p class="news-excerpt">{{ haber.icerik|striptags|truncatewords:20 }}</p>
+                <h3 class="news-title">{{ haber.baslik|striptags }}</h3>
+                <p class="news-excerpt">
+                    {% if haber.ozet %}
+                    {{ haber.ozet|striptags|truncatewords:20 }}
+                    {% else %}
+                    {{ haber.icerik|striptags|truncatewords:20 }}
+                    {% endif %}
+                </p>
                 <div class="news-footer">
                     <span class="news-author"><i class="bi bi-person"></i> {{ haber.get_yazar_adi }}</span>
                 </div>
