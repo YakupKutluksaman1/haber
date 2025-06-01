@@ -4,8 +4,10 @@
 
 {% block content %}
 <!-- Yan reklamlar -->
+{% comment %}
 {% include 'haberler/includes/ads.html' with position="left_sidebar" %}
 {% include 'haberler/includes/ads.html' with position="right_sidebar" %}
+{% endcomment %}
 
 <div class="container">
     <!-- Kategori Başlık Bölümü -->
@@ -226,8 +228,16 @@
             </div>
         </div>
         {% if forloop.counter|divisibleby:3 and not forloop.last %}
-        <!-- Her 3 haberden sonra reklam alanı -->
-        {% include 'haberler/includes/ads.html' with position="in_content" ad_number=forloop.counter %}
+        <!-- Masaüstünde her 3 haberden sonra reklam -->
+        <div class="col-12 my-3 d-none d-md-block">
+            {% include 'haberler/includes/ads.html' with position="in_content" ad_number=forloop.counter %}
+        </div>
+        {% endif %}
+        {% if forloop.counter|divisibleby:4 and not forloop.last %}
+        <!-- Mobilde her 4 haberden sonra reklam -->
+        <div class="col-12 my-3 d-md-none">
+            {% include 'haberler/includes/ads.html' with position="in_content" ad_number=forloop.counter %}
+        </div>
         {% endif %}
         {% endfor %}
     </div>
@@ -301,6 +311,53 @@
 
         .display-6 {
             font-size: 1.5rem;
+        }
+
+        /* Mobilde iki kart yan yana görünmesi için */
+        .col-md-6.col-lg-4 {
+            width: 50%;
+        }
+
+        /* Kart içeriği optimizasyonları */
+        .card-body {
+            padding: 10px;
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            line-height: 1.3;
+            /* Başlık sınırlamaları kaldırıldı */
+            overflow: visible;
+            display: block;
+            max-height: none;
+        }
+
+        .card-text {
+            display: none;
+            /* Özet metinlerini gizle */
+        }
+
+        .card-img-top {
+            height: 130px !important;
+        }
+
+        .card-footer {
+            padding: 8px;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        small.text-muted {
+            font-size: 0.7rem;
+        }
+
+        .badge {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
         }
     }
 

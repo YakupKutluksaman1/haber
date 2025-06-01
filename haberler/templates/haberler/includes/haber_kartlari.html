@@ -1,5 +1,5 @@
 {% for haber in haberler %}
-<div class="col-md-4 mb-4">
+<div class="col-md-4 col-sm-6 col-6 mb-4">
     <div class="news-card">
         <a href="{% url 'haber_detay' haber_slug=haber.slug %}" class="text-decoration-none">
             <div class="news-image">
@@ -13,7 +13,7 @@
                     <span class="news-date">{{ haber.yayin_tarihi|date:"d F Y" }}</span>
                 </div>
                 <h3 class="news-title">{{ haber.baslik|striptags }}</h3>
-                <p class="news-excerpt">
+                <p class="news-excerpt d-none d-md-block">
                     {% if haber.ozet %}
                     {{ haber.ozet|striptags|truncatewords:20 }}
                     {% else %}
@@ -27,6 +27,18 @@
         </a>
     </div>
 </div>
+{% if forloop.counter|divisibleby:3 and not forloop.last %}
+<!-- Masaüstünde her 3 haberden sonra reklam -->
+<div class="col-12 my-3 d-none d-md-block">
+    {% include 'haberler/includes/ads.html' with position="in_content" ad_number=forloop.counter %}
+</div>
+{% endif %}
+{% if forloop.counter|divisibleby:4 and not forloop.last %}
+<!-- Mobilde her 4 haberden sonra reklam -->
+<div class="col-12 my-3 d-md-none">
+    {% include 'haberler/includes/ads.html' with position="in_content" ad_number=forloop.counter %}
+</div>
+{% endif %}
 {% if forloop.counter|divisibleby:6 and not forloop.last %}
 <div class="col-12 mb-4 mt-2">
     <hr

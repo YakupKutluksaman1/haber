@@ -2,10 +2,66 @@
 
 {% block title %}Ana Sayfa - Özbel Haber{% endblock %}
 
+{% block meta_description %}Özbel Haber - Gaziantep ve çevresinin en güncel haberleri. Yerel, ulusal ve uluslararası
+haberleri tarafsız bir şekilde takip edin. Spor, ekonomi, politika ve son dakika haberleri.{% endblock %}
+
+{% block meta_keywords %}özbel, özbel haber, gaziantep haber, yerel haber, son dakika, tarafsız haber, gaziantep
+haberleri,
+şahinbey haber, güncel haberler{% endblock %}
+
+{% block head %}
+<!-- Structured Data (JSON-LD) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "NewsMediaOrganization",
+  "name": "Özbel Haber",
+  "alternateName": ["ÖZBEL HABER", "Özbel", "ÖZBEL"],
+  "url": "https://www.ozbelhaber.com",
+  "logo": "https://www.ozbelhaber.com/static/images/logo.jpg",
+  "description": "Gaziantep'in tarafsız haber kaynağı. Yerel, ulusal ve uluslararası haberleri objektif bir şekilde sunan haber portalı.",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Şahinbey",
+    "addressRegion": "Gaziantep",
+    "addressCountry": "TR"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+90-542-353-8723",
+    "contactType": "customer service",
+    "email": "abdullahsolmaz.1248@gmail.com"
+  },
+  "sameAs": [
+    "https://www.ozbelhaber.com"
+  ],
+  "founder": {
+    "@type": "Person",
+    "name": "Abdullah SOLMAZ"
+  },
+  "dateModified": "{{ now|date:'c' }}",
+  "inLanguage": "tr-TR",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Özbel Haber",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://www.ozbelhaber.com/static/images/logo.jpg"
+    }
+  }
+}
+</script>
+
+<!-- Site Doğrulama Meta Etiketleri (Google Search Console için) -->
+<meta name="google-site-verification" content="googlea29b1506f669d0fc">
+{% endblock %}
+
 {% block content %}
 <!-- Yan reklamlar -->
+{% comment %}
 {% include 'haberler/includes/ads.html' with position="left_sidebar" %}
 {% include 'haberler/includes/ads.html' with position="right_sidebar" %}
+{% endcomment %}
 
 <div class="container mt-4">
     <!-- Üst Reklam Alanı -->
@@ -296,6 +352,7 @@
     {% endif %}
 
     <!-- İlan Vitrini Slider -->
+    {% comment %}
     {% if ilanlar %}
     <div class="ilan-vitrini-container mb-5">
         <div class="row mb-3">
@@ -445,6 +502,7 @@
     </div>
 </div>
 {% endif %}
+{% endcomment %}
 
 <!-- Haberler Öncesi Reklam Alanı -->
 {% include 'haberler/includes/ads.html' with position="middle" %}
@@ -1129,7 +1187,11 @@
     }
 
     .news-content {
-        padding: 20px;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: calc(100% - 220px);
     }
 
     .news-meta {
@@ -1212,6 +1274,11 @@
         line-height: 1.4;
         color: #666;
         margin-bottom: 15px;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        max-height: 65px;
     }
 
     .news-footer {
@@ -1268,11 +1335,51 @@
 
     @media (max-width: 768px) {
         .news-image {
-            height: 180px;
+            height: 150px;
         }
 
         .news-title {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            line-height: 1.3;
+            /* Başlık sınırlamaları kaldırıldı */
+            overflow: visible;
+            display: block;
+            max-height: none;
+            /* Başlığın altına ekstra boşluk */
+            margin-bottom: 10px;
+        }
+
+        /* Mobilde kartlar için ek optimizasyonlar */
+        .news-content {
+            padding: 10px;
+            height: auto;
+            min-height: 100px;
+        }
+
+        .news-meta {
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 6px;
+        }
+
+        .news-date {
+            font-size: 0.7rem;
+        }
+
+        .news-category {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+        }
+
+        .news-footer {
+            padding-top: 5px;
+            margin-top: 5px;
+        }
+
+        .news-author {
+            font-size: 0.7rem;
+            padding: 2px 5px;
         }
     }
 
@@ -2077,6 +2184,7 @@
     }
 
     /* Sağ ve Sol Yapışkan Reklam Stilleri */
+    /*
     .sticky-ad-left,
     .sticky-ad-right {
         position: fixed;
@@ -2137,15 +2245,66 @@
             font-size: 0.8rem;
         }
     }
+    */
 
-    /* Sadece büyük ekranlarda yan reklamları göster */
-    @media (max-width: 1400px) {
+    /* Sadece çok küçük ekranlarda yan reklamları gizle */
+    /*
+    @media (max-width: 1200px) {
 
         .sticky-ad-left,
         .sticky-ad-right {
             display: none !important;
         }
     }
+
+    /* 17 inç ekranlar için (yaklaşık 1280px-1366px) */
+    @media (min-width: 1200px) and (max-width: 1366px) {
+        .sticky-ad-left {
+            left: 2px;
+            width: 120px;
+            height: 500px;
+        }
+
+        .sticky-ad-right {
+            right: 2px;
+            width: 120px;
+            height: 500px;
+        }
+
+        .placeholder-ad-vertical {
+            font-size: 0.8rem;
+        }
+    }
+
+    /* 19 inç ekranlar için (yaklaşık 1366px-1440px) */
+    @media (min-width: 1367px) and (max-width: 1440px) {
+        .sticky-ad-left {
+            left: 5px;
+            width: 130px;
+            height: 550px;
+        }
+
+        .sticky-ad-right {
+            right: 5px;
+            width: 130px;
+            height: 550px;
+        }
+    }
+
+    /* 20-22 inç ekranlar için (yaklaşık 1440px-1680px) */
+    @media (min-width: 1441px) and (max-width: 1680px) {
+        .sticky-ad-left {
+            left: 8px;
+            width: 140px;
+        }
+
+        .sticky-ad-right {
+            right: 8px;
+            width: 140px;
+        }
+    }
+
+    */
 
     /* İlan sliderı için pagination stilleri */
     .ilan-slider .swiper-pagination {
@@ -2687,6 +2846,7 @@
         }
 
         // Yan reklamların scroll pozisyonunu ayarla
+        /*
         function adjustStickyAds() {
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
             const headerHeight = 100; // Header yüksekliği (yaklaşık değer)
@@ -2728,6 +2888,7 @@
 
         // İlk yüklendiğinde pozisyonu ayarla
         adjustStickyAds();
+        */
 
         // Sayfanın geri kalanı yüklendikten sonra reklamları yükle
         window.addEventListener('load', loadAdsense);

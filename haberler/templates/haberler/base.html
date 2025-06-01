@@ -7,6 +7,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Özbel Haber{% endblock %}</title>
 
+    <!-- SEO Meta Etiketleri -->
+    <meta name="description"
+        content="{% block meta_description %}Özbel Haber - Gaziantep'in en güncel ve tarafsız haber kaynağı. Yerel, ulusal ve uluslararası haberler, spor, ekonomi, politika ve daha fazlası.{% endblock %}">
+    <meta name="keywords"
+        content="{% block meta_keywords %}özbel, özbel haber, gaziantep haber, yerel haber, güncel haber, tarafsız haber, gaziantep haberleri, şahinbey haber{% endblock %}">
+    <meta name="author" content="Özbel Haber">
+    <meta name="robots" content="{% block meta_robots %}index, follow{% endblock %}">
+    <meta name="language" content="Turkish">
+    <meta name="revisit-after" content="1 days">
+
     <!-- Varsayılan Open Graph Meta Etiketleri -->
     <meta property="og:title" content="{% block og_title %}Özbel Haber{% endblock %}" />
     <meta property="og:type" content="{% block og_type %}website{% endblock %}" />
@@ -24,6 +34,15 @@
         content="{% block twitter_description %}Özbel Haber - Gaziantep'in Tarafsız Haber Kaynağı{% endblock %}">
     <meta name="twitter:image"
         content="{{ request.scheme }}://{{ request.get_host }}{% block twitter_image %}/static/images/logo.jpg{% endblock %}">
+
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3978887493993295"
+        crossorigin="anonymous"></script>
+
+    <!-- Site Doğrulama Meta Etiketleri (Google Search Console için) -->
+    <meta name="google-site-verification" content="googlea29b1506f669d0fc">
+
+    {% block head %}{% endblock %}
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -857,12 +876,12 @@
                     </div>
                     <p>Sosyal medya kanallarımızdan bizi takip ederek en güncel haberlere anında ulaşabilirsiniz.</p>
                     <div class="social-icons">
-                        <a href="https://www.instagram.com/ozbelhaber.comm?igsh=MWd6aGZuajlkdjRjaw==" target="_blank"
+                        <a href="https://www.instagram.com/ozbelhaber.com.tr?igsh=MWd6aGZuajlkdjRjaw==" target="_blank"
                             class="social-icon" title="Instagram'da Takip Et"><i class="bi bi-instagram"></i></a>
                         <a href="https://x.com/ozhaber27?t=T48FncbRZYGi763-nAp3Lw&s=09" target="_blank"
                             class="social-icon" title="X'te Takip Et"><i class="bi bi-twitter-x"></i></a>
-                        <a href="#" target="_blank" class="social-icon" title="YouTube Kanalımız Yakında"><i
-                                class="bi bi-youtube"></i></a>
+                        <a href="https://youtube.com/@ozbelhaber?si=-woyqhvVpB-_7HZu" target="_blank"
+                            class="social-icon" title="YouTube Kanalımız"><i class="bi bi-youtube"></i></a>
                         <a href="https://wa.me/905423538723" target="_blank" class="social-icon"
                             title="WhatsApp Haber Hattı"><i class="bi bi-whatsapp"></i></a>
                     </div>
@@ -883,8 +902,10 @@
     </footer>
 
     <!-- Google AdSense için gerekli script -->
+    {% comment %}
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXX"
         crossorigin="anonymous"></script>
+    {% endcomment %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>

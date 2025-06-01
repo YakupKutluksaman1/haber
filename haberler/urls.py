@@ -1,5 +1,14 @@
 from django.urls import path
 from . import views
+from django.contrib.sitemaps.views import sitemap
+from .sitemaps import HaberSitemap, KategoriSitemap, StatikSayfalarSitemap
+
+# Sitemaps dictionary
+sitemaps = {
+    'haberler': HaberSitemap,
+    'kategoriler': KategoriSitemap,
+    'statik': StatikSayfalarSitemap,
+}
 
 urlpatterns = [
     path('', views.ana_sayfa, name='ana_sayfa'),
@@ -22,4 +31,7 @@ urlpatterns = [
     # Haber çekme işlemleri
     path('haberleri-cek/', views.fetch_tekha_news, name='fetch_tekha_news'),
     path('tum-haberleri-cek/', views.fetch_all_categories, name='fetch_all_categories'),
+
+    # Sitemap URL'i
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 ] 

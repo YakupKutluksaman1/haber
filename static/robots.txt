@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Arama motoru botlarına sitemap konumunu bildirme
+Sitemap: https://www.ozbelhaber.com/sitemap.xml
+
+# Admin sayfalarını engelleme
+Disallow: /admin/
+Disallow: /django-admin/
+
+# Özel sayfaları engelleme
+Disallow: /haberleri-cek/
+Disallow: /tum-haberleri-cek/
+
+# Arama sonuçları sayfalarını engelleme
+Disallow: /arama/?*
+
+# Crawl-delay (isteğe bağlı - sunucu yoğunluğuna göre)
+Crawl-delay: 1 
