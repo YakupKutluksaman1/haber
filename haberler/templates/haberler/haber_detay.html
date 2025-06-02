@@ -16,21 +16,6 @@
 
 {% block extra_css %}
 <style>
-    /* X butonu için özel stillendirme */
-    .x-button {
-        color: #000 !important;
-        border-color: #000 !important;
-        background-color: #fff !important;
-    }
-
-    .x-button:hover {
-        background-color: #f2f2f2 !important;
-    }
-
-    .bi-twitter-x {
-        font-weight: bold;
-    }
-
     .news-title {
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         position: relative;
@@ -211,9 +196,8 @@
                             style="color: #011e5a; border-color: #011e5a;" title="Facebook'ta Paylaş">
                             <i class="bi bi-facebook"></i>
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary x-button" onclick="shareOnTwitter()"
-                            style="color: #000000; border-color: #000000; background-color: #ffffff;"
-                            title="X'te Paylaş">
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="shareOnTwitter()"
+                            style="color: #011e5a; border-color: #011e5a;" title="X'te Paylaş">
                             <i class="bi bi-twitter-x"></i>
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-primary" onclick="shareOnWhatsApp()"
