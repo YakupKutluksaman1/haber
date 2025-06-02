@@ -77,118 +77,197 @@ class Command(BaseCommand):
         for related in cleaned_element.find_all(['div', 'section'], class_=lambda c: c and related_pattern.search(c)):
             related.decompose()
             
-        # Yazar bilgilerini içerebilecek imza satırlarını temizle
+        # GELİŞTİRİLMİŞ yazar bilgilerini içerebilecek imza satırlarını temizle
         # Yaygın yazar imza kalıpları - derlenen regex objeleri
         author_patterns = [
-            re.compile(r'[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+-[A-Z]+/TEKHA$', re.IGNORECASE),  # Ad Soyad-ŞEHİR/TEKHA (satır sonu)
-            re.compile(r'[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+/[A-Z]+$', re.IGNORECASE),  # Ad Soyad/ŞEHİR (satır sonu)
-            re.compile(r'[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+[-/][A-Z]+$', re.IGNORECASE),  # Ad Soyad-ŞEHİR veya Ad Soyad/ŞEHİR (satır sonu)
-            re.compile(r'[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s+[A-Z]+$', re.IGNORECASE),  # Ad Soyad ŞEHİR (satır sonu)
-            re.compile(r'^Haber[:\s]+[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+', re.IGNORECASE),  # Haber: Ad Soyad (satır başı)
-            re.compile(r'^Kaynak[:\s]+TEKHA', re.IGNORECASE),  # Kaynak: TEKHA (satır başı)
-            re.compile(r'^TEKHA\s+HABER\s+AJANSI', re.IGNORECASE),  # TEKHA HABER AJANSI (satır başı)
-            re.compile(r'[A-Z][A-ZÇĞİÖŞÜ]+\s+[A-Z][A-ZÇĞİÖŞÜ]+-[A-Z]+/[A-Z]+$', re.IGNORECASE),  # BÜYÜK AD SOYAD-ŞEHİR/AJANS (satır sonu)
-            re.compile(r'Birol\s+Güngördü\s*/?\s*Çanakkale\s*[-/]?\s*TEKHA$', re.IGNORECASE),  # Birol Güngördü/Çanakkale TEKHA (satır sonu)
-            re.compile(r'Hüseyin\s+[zZ]orkun\s*[hH]atay\s*[-/]?\s*[tT][eE][kK][hH][aA]$', re.IGNORECASE),  # Hüseyin Zorkun Hatay-TEKHA (satır sonu)
-            # YENİ: Burak Birol için eklenen desenler
-            re.compile(r'Burak\s+Birol\s*[/-]?\s*[^/\n]*\s*[-/]?\s*TEKHA$', re.IGNORECASE),  # Burak Birol
-            re.compile(r'BURAK\s+BIROL\s*[/-]?\s*[^/\n]*\s*[-/]?\s*TEKHA$', re.IGNORECASE),  # BURAK BIROL
-            re.compile(r'Burak\s+BİROL\s*[–\-/]?\s*BURSA\s*[–\-/]?\s*TEKHA$', re.IGNORECASE),  # Burak BİROL BURSA
-            re.compile(r'BURAK\s+BİROL\s*[–\-/]?\s*BURSA\s*[–\-/]?\s*TEKHA$', re.IGNORECASE),  # BURAK BİROL BURSA
-            re.compile(r'Burak\s+BİROL\s*–\s*BURSA\s*/\s*TEKHA$', re.IGNORECASE),  # Burak BİROL – BURSA / TEKHA
-            re.compile(r'BURAK\s+BİROL\s*–\s*BURSA\s*/\s*TEKHA$', re.IGNORECASE),  # BURAK BİROL – BURSA / TEKHA
-            # YENİ: Hüseyin Zorkun için geliştirilmiş desenler
-            re.compile(r'HÜSEYIN\s+ZORKUN\s*[/-]?\s*HATAY\s*[-/]?\s*TEKHA$', re.IGNORECASE),  # HÜSEYIN ZORKUN HATAY
-            re.compile(r'Hᴜ̈SᴇYİN\s+Zᴏʀᴋᴜɴ\s*[/\s-]*\s*HATAY\s*[-–/]?\s*TEKHA$', re.IGNORECASE),  # Özel karakter
-            re.compile(r'HUSEYIN\s+ZORKUN\s*[/\s-]*\s*HATAY\s*[-–/]?\s*TEKHA$', re.IGNORECASE),  # Türkçe karakter olmadan
-            # YENİ: Hüseyin Polattimur için eklenen desenler
-            re.compile(r'Hüseyin\s+Polattimur\s*[/-]?\s*Kocaeli\s*[-/]?\s*TEKHA$', re.IGNORECASE),  # Hüseyin Polattimur Kocaeli
-            re.compile(r'HÜSEYIN\s+POLATTIMUR\s*[/-]?\s*KOCAELI\s*[-/]?\s*TEKHA$', re.IGNORECASE),  # HÜSEYIN POLATTIMUR KOCAELI
-            # YENİ: Abdullah Solmaz için eklenen desenler
-            re.compile(r'ABDULLAH\s+SOLMAZ[-\s/]*GAZİANTEP/?TEKHA$', re.IGNORECASE),  # Abdullah Solmaz Gaziantep
-            re.compile(r'[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s*[-/]?\s*TEKHA$', re.IGNORECASE)  # Herhangi bir Yazar TEKHA (satır sonu)
+            # Orijinal desenler
+            re.compile(r'[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+-[A-Z]+/TEKHA$', re.IGNORECASE),
+            re.compile(r'[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+/[A-Z]+$', re.IGNORECASE),
+            re.compile(r'[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+[-/][A-Z]+$', re.IGNORECASE),
+            re.compile(r'[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s+[A-Z]+$', re.IGNORECASE),
+            re.compile(r'^Haber[:\s]+[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+', re.IGNORECASE),
+            re.compile(r'^Kaynak[:\s]+TEKHA', re.IGNORECASE),
+            re.compile(r'^TEKHA\s+HABER\s+AJANSI', re.IGNORECASE),
+            re.compile(r'[A-Z][A-ZÇĞİÖŞÜ]+\s+[A-Z][A-ZÇĞİÖŞÜ]+-[A-Z]+/[A-Z]+$', re.IGNORECASE),
+            
+            # YENİ: ABDULLAH SOLMAZ formatı için özel desenler
+            re.compile(r'ABDULLAH\s+SOLMAZ[-\s/]*GAZİANTEP[-\s/]*TEKHA', re.IGNORECASE),
+            re.compile(r'ABDULLAH\s+SOLMAZ[-\s]*GAZİANTEP[-\s/]*TEKHA', re.IGNORECASE),
+            re.compile(r'ABDULLAH\s+SOLMAZ\s*-\s*GAZİANTEP\s*/?\s*TEKHA', re.IGNORECASE),
+            
+            # YENİ: Hüseyin ZORKUN için geliştirilmiş desenler
+            re.compile(r'Hüseyin\s+ZORKUN\s*/\s*Hatay[-\s]*TEKHA', re.IGNORECASE),
+            re.compile(r'HÜSEYIN\s+ZORKUN\s*/\s*HATAY[-\s]*TEKHA', re.IGNORECASE),
+            re.compile(r'Hüseyin\s+ZORKUN\s*/\s*Hatay\s*-\s*TEKHA', re.IGNORECASE),
+            re.compile(r'HÜSEYIN\s+ZORKUN\s*/\s*HATAY\s*-\s*TEKHA', re.IGNORECASE),
+            re.compile(r'Hüseyin\s+ZORKUN\s*/\s*HATAY\s*–\s*TEKHA', re.IGNORECASE),  # uzun tire
+            re.compile(r'HÜSEYIN\s+ZORKUN\s*/\s*HATAY\s*–\s*TEKHA', re.IGNORECASE),  # uzun tire
+            
+            # YENİ: Salih ÜSTÜNDAĞ için özel desenler
+            re.compile(r'Salih\s+ÜSTÜNDAĞ[-\s]*TEKHA\s*/\s*ISPARTA', re.IGNORECASE),
+            re.compile(r'SALİH\s+ÜSTÜNDAĞ[-\s]*TEKHA\s*/\s*ISPARTA', re.IGNORECASE),
+            re.compile(r'Salih\s+ÜSTÜNDAĞ\s*-\s*TEKHA\s*/\s*ISPARTA', re.IGNORECASE),
+            re.compile(r'SALİH\s+ÜSTÜNDAĞ\s*-\s*TEKHA\s*/\s*ISPARTA', re.IGNORECASE),
+            re.compile(r'Salih\s+ÜSTÜNDAĞ[-\s/]*TEKHA[-\s/]*ISPARTA', re.IGNORECASE),
+            re.compile(r'SALİH\s+ÜSTÜNDAĞ[-\s/]*TEKHA[-\s/]*ISPARTA', re.IGNORECASE),
+            
+            # YENİ: Halil Azizoğlu için özel desenler
+            re.compile(r'Halil\s+Azizoğlu\s*-\s*TEKHA\s*-\s*Gazeteci\s*/\s*YAZar', re.IGNORECASE),
+            re.compile(r'HALİL\s+AZİZOĞLU\s*-\s*TEKHA\s*-\s*GAZETECİ\s*/\s*YAZAR', re.IGNORECASE),
+            re.compile(r'Halil\s+Azizoğlu\s*-\s*TEKHA\s*-\s*Gazeteci', re.IGNORECASE),
+            re.compile(r'HALİL\s+AZİZOĞLU\s*-\s*TEKHA\s*-\s*GAZETECİ', re.IGNORECASE),
+            re.compile(r'Halil\s+Azizoğlu[-\s]*TEKHA[-\s]*Gazeteci', re.IGNORECASE),
+            re.compile(r'HALİL\s+AZİZOĞLU[-\s]*TEKHA[-\s]*GAZETECİ', re.IGNORECASE),
+            
+            # Diğer özel yazar formatları
+            re.compile(r'Birol\s+Güngördü\s*/?\s*Çanakkale\s*[-/]?\s*TEKHA$', re.IGNORECASE),
+            re.compile(r'Hüseyin\s+[zZ]orkun\s*[hH]atay\s*[-/]?\s*[tT][eE][kK][hH][aA]$', re.IGNORECASE),
+            re.compile(r'Burak\s+Birol\s*[/-]?\s*[^/\n]*\s*[-/]?\s*TEKHA$', re.IGNORECASE),
+            re.compile(r'BURAK\s+BIROL\s*[/-]?\s*[^/\n]*\s*[-/]?\s*TEKHA$', re.IGNORECASE),
+            re.compile(r'Burak\s+BİROL\s*[–\-/]?\s*BURSA\s*[–\-/]?\s*TEKHA$', re.IGNORECASE),
+            re.compile(r'BURAK\s+BİROL\s*[–\-/]?\s*BURSA\s*[–\-/]?\s*TEKHA$', re.IGNORECASE),
+            re.compile(r'Burak\s+BİROL\s*–\s*BURSA\s*/\s*TEKHA$', re.IGNORECASE),
+            re.compile(r'BURAK\s+BİROL\s*–\s*BURSA\s*/\s*TEKHA$', re.IGNORECASE),
+            re.compile(r'HÜSEYIN\s+ZORKUN\s*[/-]?\s*HATAY\s*[-/]?\s*TEKHA$', re.IGNORECASE),
+            re.compile(r'Hᴜ̈SᴇYİN\s+Zᴏʀᴋᴜɴ\s*[/\s-]*\s*HATAY\s*[-–/]?\s*TEKHA$', re.IGNORECASE),
+            re.compile(r'HUSEYIN\s+ZORKUN\s*[/\s-]*\s*HATAY\s*[-–/]?\s*TEKHA$', re.IGNORECASE),
+            re.compile(r'Hüseyin\s+Polattimur\s*[/-]?\s*Kocaeli\s*[-/]?\s*TEKHA$', re.IGNORECASE),
+            re.compile(r'HÜSEYIN\s+POLATTIMUR\s*[/-]?\s*KOCAELI\s*[-/]?\s*TEKHA$', re.IGNORECASE),
+            
+            # Genel yazar formatları (en sonda)
+            re.compile(r'[A-ZÇĞİÖŞÜ]+\s+[A-ZÇĞİÖŞÜ]+\s*[-/]?\s*[A-ZÇĞİÖŞÜ]+\s*[-/]?\s*TEKHA', re.IGNORECASE),
+            re.compile(r'[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s*[-/]?\s*TEKHA$', re.IGNORECASE),
+            
+            # YENİ: Gazeteci/Yazar unvanları içeren formatlar
+            re.compile(r'[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s*-\s*TEKHA\s*-\s*Gazeteci', re.IGNORECASE),
+            re.compile(r'[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s*-\s*TEKHA\s*-\s*GAZETECİ', re.IGNORECASE),
+            re.compile(r'[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s*-\s*TEKHA\s*-\s*Yazar', re.IGNORECASE),
+            re.compile(r'[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s*-\s*TEKHA\s*-\s*YAZAR', re.IGNORECASE),
+            re.compile(r'[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s*-\s*TEKHA\s*-\s*[A-Z][a-z]+\s*/\s*[A-Z][a-z]+', re.IGNORECASE),
+            
+            # YENİ: Şehir adı sonra TEKHA formatları
+            re.compile(r'[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s+[A-ZÇĞİÖŞÜ]+\s*/\s*[A-Z][a-zÇçĞğİıÖöŞşÜü]+[-\s]*TEKHA', re.IGNORECASE),
+            re.compile(r'[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s+[A-ZÇĞİÖŞÜ]+[-\s]*TEKHA\s*/\s*[A-Z][a-zÇçĞğİıÖöŞşÜü]+', re.IGNORECASE),
+            
+            # YENİ: Daha geniş formatlar
+            re.compile(r'[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s+[A-ZÇĞİÖŞÜa-zçğıöşü]+\s*[-/]\s*TEKHA\s*[-/]\s*[A-Z][a-zÇçĞğİıÖöŞşÜü]+', re.IGNORECASE),
+            
+            # YENİ: Birol Güngördü için geliştirilmiş desenler  
+            re.compile(r'BİROL\s+GÜNGÖRDÜ\s*/\s*ÇANAKKALE\s*–\s*TEKHA', re.IGNORECASE),
+            re.compile(r'BIROL\s+GUNGORDU\s*/\s*CANAKKALE\s*–\s*TEKHA', re.IGNORECASE),
+            re.compile(r'Birol\s+Güngördü\s*/\s*Çanakkale\s*–\s*TEKHA', re.IGNORECASE),
+            re.compile(r'BİROL\s+GÜNGÖRDÜ\s*/\s*ÇANAKKALE\s*-\s*TEKHA', re.IGNORECASE),
+            re.compile(r'BIROL\s+GUNGORDU\s*/\s*CANAKKALE\s*-\s*TEKHA', re.IGNORECASE),
+            
+            # YENİ: Hüseyin Polattimur için geliştirilmiş desenler
+            re.compile(r'Hüseyin\s+POLATTIMUR\s*–\s*TEKHA\s*/\s*KOCAELI', re.IGNORECASE),
+            re.compile(r'HÜSEYIN\s+POLATTIMUR\s*–\s*TEKHA\s*/\s*KOCAELI', re.IGNORECASE),
+            re.compile(r'Hüseyin\s+POLATTIMUR\s*-\s*TEKHA\s*/\s*KOCAELI', re.IGNORECASE),
+            re.compile(r'HÜSEYIN\s+POLATTIMUR\s*-\s*TEKHA\s*/\s*KOCAELI', re.IGNORECASE),
+            re.compile(r'Hüseyin\s+POLATTIMUR\s*–\s*TEKHA\s*/\s*KOCAELİ', re.IGNORECASE),
+            re.compile(r'HÜSEYIN\s+POLATTIMUR\s*–\s*TEKHA\s*/\s*KOCAELİ', re.IGNORECASE),
         ]
         
         # Kesin yazar patternları - bunları satır içinde de arayacağız
         exact_author_patterns = [
-            re.compile(r'Kaynak[:\s]+TEKHA', re.IGNORECASE),  # Kaynak: TEKHA
-            re.compile(r'TEKHA\s+HABER\s+AJANSI', re.IGNORECASE),  # TEKHA HABER AJANSI
+            re.compile(r'Kaynak[:\s]+TEKHA', re.IGNORECASE),
+            re.compile(r'TEKHA\s+HABER\s+AJANSI', re.IGNORECASE),
+            
+            # YENİ: Ekran görüntüsündeki spesifik formatlar
+            re.compile(r'BİROL\s+GÜNGÖRDÜ\s*/\s*ÇANAKKALE\s*–\s*TEKHA', re.IGNORECASE),
+            re.compile(r'Hüseyin\s+ZORKUN\s*/\s*HATAY\s*–\s*TEKHA', re.IGNORECASE),
+            re.compile(r'Hüseyin\s+POLATTIMUR\s*–\s*TEKHA\s*/\s*KOCAELI', re.IGNORECASE),
+            
+            # Genel TEKHA pattern'leri
+            re.compile(r'[A-ZÇĞİÖŞÜa-zçğıöşü\s]+\s*/\s*[A-ZÇĞİÖŞÜa-zçğıöşü\s]+\s*[–\-]\s*TEKHA', re.IGNORECASE),
+            re.compile(r'[A-ZÇĞİÖŞÜa-zçğıöşü\s]+\s*[–\-]\s*TEKHA\s*/\s*[A-ZÇĞİÖŞÜa-zçğıöşü\s]+', re.IGNORECASE),
         ]
+
+        # 4. YENİ: HTML string üzerinde güvenli yazar temizleme
+        # Text element parent sorunlarını önlemek için HTML string üzerinde çalışalım
+        html_string = str(cleaned_element)
         
-        # HTML içeriğindeki imza satırlarını temizle
-        # 0. YENİ: Başlık ve alt başlıklarda yazar bilgisi kontrolü - haber başlıklarında yazar bilgisi olabilir
-        for header in cleaned_element.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
-            if header.text:
-                header_text = header.text.strip()
-                
-                # Sadece yazar bilgisi içeren başlıkları temizle
-                yazar_bulundu_baslik = False
-                
-                # Tüm yazar desenleri için kontrol et
+        # Önce basit string temizleme - yazar bilgilerini içeren satırları kaldır
+        lines = html_string.split('\n')
+        cleaned_lines = []
+        
+        for line in lines:
+            line_text = BeautifulSoup(line, 'html.parser').get_text().strip()
+            is_author_line = False
+            
+            # Kısa satırları kontrol et (yazar bilgisi genelde kısa olur) - limit artırıldı
+            if line_text and len(line_text.split()) <= 25:  # 15'ten 25'e çıkarıldı
                 for pattern in author_patterns + exact_author_patterns:
-                    if pattern.search(header_text):
-                        # Başlık yazar bilgisi içeriyorsa ve çok uzun değilse temizle
-                        if len(header_text.split()) <= 20:
-                            header.decompose()
-                            yazar_bulundu_baslik = True
-                            break
-                        else:
-                            # Uzun başlıkta sadece yazar kısmını temizle
-                            cleaned_header = pattern.sub('', header_text)
-                            cleaned_header = re.sub(r'\s+', ' ', cleaned_header).strip()
-                            # Başlık çok kısalırsa komple sil
-                            if len(cleaned_header.split()) >= 3:
-                                header.string = cleaned_header
-                            else:
-                                header.decompose()
-                            yazar_bulundu_baslik = True
-                            break
-                
-                if yazar_bulundu_baslik:
-                    break
+                    if pattern.search(line_text):
+                        is_author_line = True
+                        break
+            
+            # TEKHA içeren tüm kısa satırları da kontrol et
+            if not is_author_line and line_text and 'TEKHA' in line_text:
+                if len(line_text.split()) <= 30:  # TEKHA içeren satırlar için daha yüksek limit
+                    is_author_line = True
+            
+            # Yazar satırı değilse ekle
+            if not is_author_line:
+                cleaned_lines.append(line)
         
-        # 1. Strong etiketleri kontrol et - yazarlar genelde strong içinde olur
-        for strong in cleaned_element.find_all('strong'):
-            if strong.text and len(strong.text.strip()) < 50:  # Uzun strong içerikleri atla, bunlar başlık olabilir
-                # Strong içindeki metin tam bir satırsa - muhtemelen yazar bilgisidir
-                if strong.text.strip() and not strong.find_all():  # Alt elemanı yoksa
-                    for pattern in author_patterns:
-                        if pattern.search(strong.text.strip()):
-                            strong.decompose()
-                            break
+        # Temizlenmiş HTML'i tekrar birleştir ve parse et
+        html_string = '\n'.join(cleaned_lines)
+        cleaned_element = BeautifulSoup(html_string, 'html.parser')
         
-        # 2. Sadece belirli paragraflarda yazar bilgisi temizleme
-        for p in cleaned_element.find_all(['p', 'div', 'span']):
-            if p.text and len(p.text.strip()) < 100:  # Kısa paragraflar
+        # İkinci geçiş: Kalan yazar bilgilerini temizle
+        # Paragraf bazında temizlik
+        for p in cleaned_element.find_all(['p', 'div', 'span', 'strong', 'em']):
+            if p.text:
                 p_text = p.text.strip()
-                
-                # a) Yazar bilgisi genellikle tek satır olur ve paragraf başında veya sonunda olur
-                if len(p_text.split('\n')) <= 2 and len(p_text.split()) <= 10:
-                    for pattern in author_patterns:
+                if p_text and len(p_text.split()) <= 30:  # Daha yüksek limit
+                    for pattern in author_patterns + exact_author_patterns:
                         if pattern.search(p_text):
                             p.decompose()
                             break
-                
-                # b) Kesin yazar patternlarını içeren herhangi bir paragrafı temizle
-                for pattern in exact_author_patterns:
-                    if pattern.search(p_text):
-                        p.decompose()
-                        break
-        
-        # 3. Son paragrafları özel olarak kontrol et (genellikle yazar imzası içerir)
-        paragraphs = cleaned_element.find_all('p')
-        if len(paragraphs) > 2:
-            for p in paragraphs[-3:]:  # Son 3 paragrafı kontrol et
-                if p.text and len(p.text.strip()) < 100:  # Kısa paragraflar
-                    p_text = p.text.strip()
                     
-                    # İmza satırı genellikle kısa olur ve özel karakterler içerir
-                    if ('TEKHA' in p_text or '/' in p_text or '-' in p_text) and len(p_text.split()) <= 10:
-                        # Tüm desenleri kontrol et
-                        for pattern in author_patterns:
-                            if pattern.search(p_text):
+                    # TEKHA içeren elementleri de temizle
+                    if 'TEKHA' in p_text and len(p_text.split()) <= 35:
+                        # Basit heuristic: TEKHA + şehir/isim kombinasyonları
+                        tekha_patterns = [
+                            r'[A-ZÇĞİÖŞÜa-zçğıöşü\s]+[-–/]\s*TEKHA',
+                            r'TEKHA\s*[-–/]\s*[A-ZÇĞİÖŞÜa-zçğıöşü\s]+',
+                            r'[A-ZÇĞİÖŞÜa-zçğıöşü\s]+\s*/\s*[A-ZÇĞİÖŞÜa-zçğıöşü\s]+[-–]\s*TEKHA'
+                        ]
+                        for tekha_pattern in tekha_patterns:
+                            if re.search(tekha_pattern, p_text, re.IGNORECASE):
                                 p.decompose()
                                 break
+        
+        # Üçüncü geçiş: Kalan TEKHA imzalarını basit string replacement ile temizle
+        html_string = str(cleaned_element)
+        
+        # Bilinen yazar imzalarını doğrudan kaldır
+        known_signatures = [
+            'BİROL GÜNGÖRDÜ / ÇANAKKALE – TEKHA',
+            'Birol Güngördü / Çanakkale – TEKHA',
+            'BIROL GUNGORDU / CANAKKALE – TEKHA',
+            'Hüseyin ZORKUN / HATAY – TEKHA', 
+            'HÜSEYIN ZORKUN / HATAY – TEKHA',
+            'Hüseyin POLATTIMUR – TEKHA / KOCAELI',
+            'HÜSEYIN POLATTIMUR – TEKHA / KOCAELI',
+            'Hüseyin POLATTIMUR – TEKHA / KOCAELİ',
+            'ABDULLAH SOLMAZ-GAZİANTEP/TEKHA',
+            'Abdullah Solmaz-Gaziantep/TEKHA',
+            'Salih ÜSTÜNDAĞ- TEKHA /ISPARTA',
+            'SALİH ÜSTÜNDAĞ- TEKHA /ISPARTA',
+            'Halil Azizoğlu - TEKHA - Gazeteci/YAZar',
+            'HALİL AZİZOĞLU - TEKHA - GAZETECİ/YAZAR'
+        ]
+        
+        for signature in known_signatures:
+            # Hem orijinal hem de çeşitli varyasyonlarını kaldır
+            html_string = html_string.replace(signature, '')
+            html_string = html_string.replace(signature.upper(), '')
+            html_string = html_string.replace(signature.lower(), '')
+        
+        # Temizlenmiş HTML'i final parse et
+        cleaned_element = BeautifulSoup(html_string, 'html.parser')
         
         # Boş paragrafları temizle
         for p in cleaned_element.find_all('p'):
@@ -281,8 +360,82 @@ class Command(BaseCommand):
         haber_linkleri = []
         
         try:
-            # Tüm kategori sayfalarını tara
-            kategoriler = ['gundem', 'asayis', 'siyaset', 'ekonomi', 'spor', 'genel', 'meteoroloji', 'politika', 'dunya', 'egitim', 'yasam', 'kultur-sanat']
+            # 1. ANA SAYFA'DAN HABER LİNKLERİ ÇEK
+            self.stdout.write("Ana sayfa kontrol ediliyor...")
+            try:
+                ana_sayfa_response = requests.get('https://www.tekha.com.tr', timeout=10)
+                if ana_sayfa_response.status_code == 200:
+                    ana_sayfa_soup = BeautifulSoup(ana_sayfa_response.content, 'html.parser')
+                    
+                    # Ana sayfadaki tüm haber linklerini bul
+                    for link in ana_sayfa_soup.find_all('a', href=True):
+                        url = link['href']
+                        if url.startswith('https://www.tekha.com.tr') and not any(x in url for x in ['/category/', '/tag/', '/page/', '/etiket/', '/yazarlar', '/uye-giris', '/nobetci-eczaneler', '/hava-durumu', '/namaz-vakitleri', '/puan-durumlari']):
+                            if url not in haber_linkleri and url != 'https://www.tekha.com.tr' and url != 'https://www.tekha.com.tr/':
+                                haber_linkleri.append(url)
+                    
+                    self.stdout.write(f"Ana sayfadan {len(haber_linkleri)} haber bulundu")
+            except Exception as e:
+                self.stdout.write(self.style.WARNING(f'Ana sayfa kontrol edilirken hata: {str(e)}'))
+            
+            # 2. RSS FEED'DEN HABER LİNKLERİ ÇEK
+            self.stdout.write("RSS feed kontrol ediliyor...")
+            rss_urls = [
+                'https://www.tekha.com.tr/rss',
+                'https://www.tekha.com.tr/feed',
+                'https://www.tekha.com.tr/rss.xml',
+                'https://www.tekha.com.tr/feed.xml'
+            ]
+            
+            for rss_url in rss_urls:
+                try:
+                    rss_response = requests.get(rss_url, timeout=10)
+                    if rss_response.status_code == 200:
+                        try:
+                            # XML parser ile dene
+                            rss_soup = BeautifulSoup(rss_response.content, 'xml')
+                        except:
+                            # XML parser yoksa html.parser kullan
+                            rss_soup = BeautifulSoup(rss_response.content, 'html.parser')
+                        
+                        # RSS'deki haber linklerini bul
+                        for item in rss_soup.find_all(['item', 'entry']):
+                            link_element = item.find(['link', 'guid'])
+                            if link_element:
+                                url = link_element.text.strip() if link_element.text else link_element.get('href', '')
+                                if url and url.startswith('https://www.tekha.com.tr') and url not in haber_linkleri:
+                                    haber_linkleri.append(url)
+                        
+                        self.stdout.write(f"RSS feed'den toplam {len(haber_linkleri)} haber bulundu")
+                        break  # İlk başarılı RSS'i kullan
+                except Exception as e:
+                    continue  # Sonraki RSS URL'sini dene
+            
+            # 3. GÜNCEL HABER SEKSİYONLARI
+            self.stdout.write("Güncel haber seksiyonları kontrol ediliyor...")
+            guncel_seksiyonlar = [
+                'https://www.tekha.com.tr/son-dakika',
+                'https://www.tekha.com.tr/son-haberler',
+                'https://www.tekha.com.tr/guncel',
+                'https://www.tekha.com.tr/anasayfa'
+            ]
+            
+            for seksiyon_url in guncel_seksiyonlar:
+                try:
+                    seksiyon_response = requests.get(seksiyon_url, timeout=10)
+                    if seksiyon_response.status_code == 200:
+                        seksiyon_soup = BeautifulSoup(seksiyon_response.content, 'html.parser')
+                        
+                        for link in seksiyon_soup.find_all('a', href=True):
+                            url = link['href']
+                            if url.startswith('https://www.tekha.com.tr') and not any(x in url for x in ['/category/', '/tag/', '/page/', '/etiket/']):
+                                if url not in haber_linkleri:
+                                    haber_linkleri.append(url)
+                except Exception:
+                    continue
+            
+            # 4. KATEGORİ SAYFALARINDAN HABER ÇEK (mevcut kod)
+            kategoriler = ['gundem', 'asayis', 'siyaset', 'ekonomi', 'spor', 'genel', 'meteoroloji', 'politika', 'dunya', 'egitim', 'yasam', 'kultur-sanat', 'saglik', 'teknoloji', 'magazin']
             
             for kategori in kategoriler:  # Tüm kategorileri tara
                 # Her kategori için son sayfaları kontrol et
@@ -325,15 +478,23 @@ class Command(BaseCommand):
             filtered_urls = []
             for url in haber_linkleri:
                 # Gereksiz sayfaları atla (yazarlar, üye giriş vb.)
-                if any(x in url for x in ['/yazarlar', '/uye-giris', '/nobetci-eczaneler', '/hava-durumu', '/namaz-vakitleri', '/puan-durumlari']):
+                if any(x in url for x in ['/yazarlar', '/uye-giris', '/nobetci-eczaneler', '/hava-durumu', '/namaz-vakitleri', '/puan-durumlari', '/kunye', '/iletisim', '/yayinlar']):
                     continue
                 # Ana sayfayı atla
                 if url == 'https://www.tekha.com.tr' or url == 'https://www.tekha.com.tr/':
                     continue
+                # Kategori sayfalarını atla
+                if '/category/' in url or '/tag/' in url or '/page/' in url:
+                    continue
+                # Çok kısa URL'leri atla (muhtemelen haber değil)
+                if len(url.split('/')[-1]) < 10:
+                    continue
                 # Geçerli haberleri ekle
                 filtered_urls.append(url)
             
-            haber_linkleri = filtered_urls[:limit]  # Sadece limit kadar al
+            # Benzersiz URL'leri al ve limit uygula
+            unique_urls = list(dict.fromkeys(filtered_urls))  # Sırayı koruyarak benzersiz yap
+            haber_linkleri = unique_urls[:limit]  # Sadece limit kadar al
             
             self.stdout.write(self.style.SUCCESS(f'Toplam {len(haber_linkleri)} haber bağlantısı bulundu'))
             
@@ -418,27 +579,7 @@ class Command(BaseCommand):
                     # İçeriği işle
                     content_soup = BeautifulSoup(content_html, 'html.parser')
                     
-                    # İçerik sonrası ek temizlik - yazar bilgilerini temizle
-                    # Kısa paragrafları kontrol et
-                    for p in content_soup.find_all(['p', 'div', 'span']):
-                        if p.text and len(p.text.strip()) < 100:  # Kısa paragraflar
-                            for pattern in author_patterns:
-                                if pattern.search(p.text):
-                                    p.decompose()
-                                    break
-                    
-                    # Son paragrafları özel olarak kontrol et (genellikle yazar imzası içerir)
-                    paragraphs = content_soup.find_all('p')
-                    if len(paragraphs) > 2:
-                        for p in paragraphs[-3:]:  # Son 3 paragrafı kontrol et
-                            if p.text and len(p.text.strip()) < 100:  # Kısa paragraflar
-                                if any('TEKHA' in p.text or 'kaynak' in p.text.lower() or '/' in p.text or '-' in p.text):
-                                    for pattern in author_patterns:
-                                        if pattern.search(p.text):
-                                            p.decompose()
-                                            break
-                    
-                    # İçeriğin son halini al
+                    # İçeriğin son halini al - clean_html_content zaten yazar bilgilerini temizlemiştir
                     content_html = str(content_soup)
                     
                     # Özet oluştur

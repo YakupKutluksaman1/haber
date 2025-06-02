@@ -20,10 +20,14 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
+from django.views.generic import TemplateView
 from haberler.views import fetch_tekha_news
 
 # Özel admin URL'lerini admin.site.urls'den önce tanımla
 urlpatterns = [
+    # Google Search Console doğrulama dosyası
+    path('googlea29b1506f669d0fc.html', TemplateView.as_view(template_name='googlea29b1506f669d0fc.html', content_type='text/html')),
+    
     # Admin sayfasındaki haber çekme işlemi için URL
     path('haberleri-cek/', fetch_tekha_news, name='fetch_tekha_news_admin'),
     # Standart admin URLs

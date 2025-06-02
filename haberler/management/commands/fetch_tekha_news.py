@@ -61,6 +61,75 @@ class Command(BaseCommand):
         else:
             cleaned_element = BeautifulSoup(str(content_element), 'html.parser')
         
+        # Yazar pattern'larını başta tanımla - tüm fonksiyon boyunca kullanılabilecek
+        author_patterns = [
+            re.compile(r'ABDULLAH\s+SOLMAZ[-\s/]*GAZİANTEP/?TEKHA', re.IGNORECASE),  # Abdullah Solmaz
+            re.compile(r'Birol\s+Güngördü\s*/?\s*Çanakkale\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Birol Güngördü
+            re.compile(r'Burak\s+Birol\s*[/-]?\s*[^/\n]*\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Burak Birol
+            re.compile(r'Burak\s+BİROL\s*[–\-/]?\s*BURSA\s*[–\-/]?\s*TEKHA', re.IGNORECASE),  # Burak BİROL BURSA formatı
+            re.compile(r'BURAK\s+BİROL\s*[–\-/]?\s*BURSA\s*[–\-/]?\s*TEKHA', re.IGNORECASE),  # BURAK BİROL BURSA formatı
+            re.compile(r'Hüseyin\s+Polattimur\s*[/-]?\s*Kocaeli\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Hüseyin Polattimur
+            
+            # Hüseyin Zorkun için genişletilmiş desenler
+            re.compile(r'Hüseyin\s+[zZ]orkun\s*[/-]?\s*[hH]atay\s*[-/]?\s*[tT][eE][kK][hH][aA]', re.IGNORECASE),  # Normal yazım
+            re.compile(r'HÜSEYIN\s+ZORKUN\s*[/-]?\s*HATAY\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Tamamen büyük harf
+            re.compile(r'Hᴜ̈SᴇYİN\s+Zᴏʀᴋᴜɴ\s*[/\s-]*\s*HATAY\s*[-–/]?\s*TEKHA', re.IGNORECASE),  # Özel karakter formatı
+            re.compile(r'H[ᴜüÜ][^\s]*S[ᴇeE][^\s]*Y[İiI][^\s]*N\s+Z[ᴏoO]R[ᴋkK][ᴜuU][ɴnN]\s*[/\s-]*\s*HATAY\s*[-–/]?\s*TEKHA', re.IGNORECASE),  # Unicode ve karışık karakterler
+            re.compile(r'HUSEYIN\s+ZORKUN\s*[/\s-]*\s*HATAY\s*[-–/]?\s*TEKHA', re.IGNORECASE),  # Türkçe karakter olmadan
+            
+            # Genel yazar ve kaynak desenleri
+            re.compile(r'[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+-[A-Z]+/TEKHA', re.IGNORECASE),  # Ad Soyad-ŞEHİR/TEKHA
+            re.compile(r'[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+/[A-Z]+', re.IGNORECASE),  # Ad Soyad/ŞEHİR
+            re.compile(r'[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+[-/][A-Z]+', re.IGNORECASE),  # Ad Soyad-ŞEHİR veya Ad Soyad/ŞEHİR
+            re.compile(r'[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s+[A-Z]+', re.IGNORECASE),  # Ad Soyad ŞEHİR
+            re.compile(r'Haber[:\s]+[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+', re.IGNORECASE),  # Haber: Ad Soyad
+            re.compile(r'Kaynak[:\s]+TEKHA', re.IGNORECASE),  # Kaynak: TEKHA
+            re.compile(r'TEKHA\s+HABER\s+AJANSI', re.IGNORECASE),  # TEKHA HABER AJANSI
+            re.compile(r'[A-Z][A-ZÇĞİÖŞÜ]+\s+[A-Z][A-ZÇĞİÖŞÜ]+-[A-Z]+/[A-Z]+', re.IGNORECASE),  # BÜYÜK AD SOYAD-ŞEHİR/AJANS
+            re.compile(r'[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Herhangi bir Yazar TEKHA
+        ]
+        
+        # Abdullah Solmaz ve diğer yazarlara özel patternlar
+        abdullah_solmaz_patterns = [
+            re.compile(r'ABDULLAH\s+SOLMAZ[-\s]*GAZİANTEP/TEKHA', re.IGNORECASE),  # Tam imza formatı
+            re.compile(r'ABDULLAH\s+SOLMAZ', re.IGNORECASE),  # Sadece isim  
+        ]
+        
+        # Hüseyin Zorkun özel patternları
+        huseyin_zorkun_patterns = [
+            re.compile(r'Hüseyin\s+[zZ]orkun\s*[/-]?\s*[hH]atay\s*[-/]?\s*[tT][eE][kK][hH][aA]', re.IGNORECASE),  # Normal yazım
+            re.compile(r'HÜSEYIN\s+ZORKUN\s*[/-]?\s*HATAY\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Tamamen büyük harf
+            re.compile(r'Hᴜ̈SᴇYİN\s+Zᴏʀᴋᴜɴ\s*[/\s-]*\s*HATAY\s*[-–/]?\s*TEKHA', re.IGNORECASE),  # Özel karakter formatı
+            re.compile(r'H[ᴜüÜ][^\s]*S[ᴇeE][^\s]*Y[İiI][^\s]*N\s+Z[ᴏoO]R[ᴋkK][ᴜuU][ɴnN]\s*[/\s-]*\s*HATAY\s*[-–/]?\s*TEKHA', re.IGNORECASE),  # Unicode ve karışık karakterler
+            re.compile(r'HUSEYIN\s+ZORKUN\s*[/\s-]*\s*HATAY\s*[-–/]?\s*TEKHA', re.IGNORECASE),  # Türkçe karakter olmadan
+            re.compile(r'Hüseyin\s+Zorkun', re.IGNORECASE),  # Sadece isim
+            re.compile(r'HÜSEYIN\s+ZORKUN', re.IGNORECASE),  # Sadece isim büyük harfle
+            re.compile(r'Hᴜ̈SᴇYİN\s+Zᴏʀᴋᴜɴ', re.IGNORECASE),  # Sadece isim özel karakterle
+        ]
+        
+        # Burak Birol özel patternları
+        burak_birol_patterns = [
+            re.compile(r'Burak\s+Birol\s*[/-]?\s*[^/\n]*\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Normal yazım
+            re.compile(r'BURAK\s+BIROL\s*[/-]?\s*[^/\n]*\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Tamamen büyük harf
+            re.compile(r'Burak\s+BİROL\s*[–\-/]?\s*BURSA\s*[–\-/]?\s*TEKHA', re.IGNORECASE),  # Türkçe karakter formatı
+            re.compile(r'BURAK\s+BİROL\s*[–\-/]?\s*BURSA\s*[–\-/]?\s*TEKHA', re.IGNORECASE),  # Tamamen büyük harf Türkçe
+            re.compile(r'Burak\s+BİROL\s*–\s*BURSA\s*/\s*TEKHA', re.IGNORECASE),  # Tam format eşleşmesi
+            re.compile(r'BURAK\s+BİROL\s*–\s*BURSA\s*/\s*TEKHA', re.IGNORECASE),  # Tam format büyük harf
+            re.compile(r'Burak\s+B[İiI]ROL\s*[–\-/]?\s*[A-ZÇĞİÖŞÜa-zçğıöşü]+\s*[–\-/]?\s*TEKHA', re.IGNORECASE),  # Esnek karakter eşleşmesi
+            re.compile(r'BURAK\s+B[İiI]ROL\s*[–\-/]?\s*[A-ZÇĞİÖŞÜa-zçğıöşü]+\s*[–\-/]?\s*TEKHA', re.IGNORECASE),  # Esnek büyük harf
+            re.compile(r'Burak\s+Birol', re.IGNORECASE),  # Sadece isim
+            re.compile(r'Burak\s+BİROL', re.IGNORECASE),  # Sadece isim Türkçe karakter
+            re.compile(r'BURAK\s+BİROL', re.IGNORECASE),  # Sadece isim büyük harf Türkçe
+        ]
+        
+        # Hüseyin Polattimur özel patternları
+        huseyin_polattimur_patterns = [
+            re.compile(r'Hüseyin\s+Polattimur\s*[/-]?\s*Kocaeli\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Normal yazım
+            re.compile(r'HÜSEYIN\s+POLATTIMUR\s*[/-]?\s*KOCAELI\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Tamamen büyük harf
+            re.compile(r'Hüseyin\s+Polattimur', re.IGNORECASE),  # Sadece isim
+            re.compile(r'HÜSEYIN\s+POLATTIMUR', re.IGNORECASE),  # Sadece isim büyük harfle
+        ]
+        
         # İstenmeyen elementleri temizle
         for unwanted in cleaned_element.find_all(['script', 'style', 'iframe', 'form', 'button', 'nav', 'footer', 'aside']):
             unwanted.decompose()
@@ -121,75 +190,6 @@ class Command(BaseCommand):
         
         # Yazar bilgilerini temizle
         if remove_author:
-            # Temel yazar imzaları - içerik içinde arama yapacak şekilde düzenlenmiş
-            author_patterns = [
-                re.compile(r'ABDULLAH\s+SOLMAZ[-\s/]*GAZİANTEP/?TEKHA', re.IGNORECASE),  # Abdullah Solmaz
-                re.compile(r'Birol\s+Güngördü\s*/?\s*Çanakkale\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Birol Güngördü
-                re.compile(r'Burak\s+Birol\s*[/-]?\s*[^/\n]*\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Burak Birol
-                re.compile(r'Burak\s+BİROL\s*[–\-/]?\s*BURSA\s*[–\-/]?\s*TEKHA', re.IGNORECASE),  # Burak BİROL BURSA formatı
-                re.compile(r'BURAK\s+BİROL\s*[–\-/]?\s*BURSA\s*[–\-/]?\s*TEKHA', re.IGNORECASE),  # BURAK BİROL BURSA formatı
-                re.compile(r'Hüseyin\s+Polattimur\s*[/-]?\s*Kocaeli\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Hüseyin Polattimur
-                
-                # Hüseyin Zorkun için genişletilmiş desenler
-                re.compile(r'Hüseyin\s+[zZ]orkun\s*[/-]?\s*[hH]atay\s*[-/]?\s*[tT][eE][kK][hH][aA]', re.IGNORECASE),  # Normal yazım
-                re.compile(r'HÜSEYIN\s+ZORKUN\s*[/-]?\s*HATAY\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Tamamen büyük harf
-                re.compile(r'Hᴜ̈SᴇYİN\s+Zᴏʀᴋᴜɴ\s*[/\s-]*\s*HATAY\s*[-–/]?\s*TEKHA', re.IGNORECASE),  # Özel karakter formatı
-                re.compile(r'H[ᴜüÜ][^\s]*S[ᴇeE][^\s]*Y[İiI][^\s]*N\s+Z[ᴏoO]R[ᴋkK][ᴜuU][ɴnN]\s*[/\s-]*\s*HATAY\s*[-–/]?\s*TEKHA', re.IGNORECASE),  # Unicode ve karışık karakterler
-                re.compile(r'HUSEYIN\s+ZORKUN\s*[/\s-]*\s*HATAY\s*[-–/]?\s*TEKHA', re.IGNORECASE),  # Türkçe karakter olmadan
-                
-                # Genel yazar ve kaynak desenleri
-                re.compile(r'[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+-[A-Z]+/TEKHA', re.IGNORECASE),  # Ad Soyad-ŞEHİR/TEKHA
-                re.compile(r'[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+/[A-Z]+', re.IGNORECASE),  # Ad Soyad/ŞEHİR
-                re.compile(r'[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+[-/][A-Z]+', re.IGNORECASE),  # Ad Soyad-ŞEHİR veya Ad Soyad/ŞEHİR
-                re.compile(r'[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s+[A-Z]+', re.IGNORECASE),  # Ad Soyad ŞEHİR
-                re.compile(r'Haber[:\s]+[A-Z][a-z]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+', re.IGNORECASE),  # Haber: Ad Soyad
-                re.compile(r'Kaynak[:\s]+TEKHA', re.IGNORECASE),  # Kaynak: TEKHA
-                re.compile(r'TEKHA\s+HABER\s+AJANSI', re.IGNORECASE),  # TEKHA HABER AJANSI
-                re.compile(r'[A-Z][A-ZÇĞİÖŞÜ]+\s+[A-Z][A-ZÇĞİÖŞÜ]+-[A-Z]+/[A-Z]+', re.IGNORECASE),  # BÜYÜK AD SOYAD-ŞEHİR/AJANS
-                re.compile(r'[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s+[A-Z][a-zÇçĞğİıÖöŞşÜü]+\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Herhangi bir Yazar TEKHA
-            ]
-            
-            # Abdullah Solmaz ve diğer yazarlara özel patternlar
-            abdullah_solmaz_patterns = [
-                re.compile(r'ABDULLAH\s+SOLMAZ[-\s]*GAZİANTEP/TEKHA', re.IGNORECASE),  # Tam imza formatı
-                re.compile(r'ABDULLAH\s+SOLMAZ', re.IGNORECASE),  # Sadece isim  
-            ]
-            
-            # Hüseyin Zorkun özel patternları
-            huseyin_zorkun_patterns = [
-                re.compile(r'Hüseyin\s+[zZ]orkun\s*[/-]?\s*[hH]atay\s*[-/]?\s*[tT][eE][kK][hH][aA]', re.IGNORECASE),  # Normal yazım
-                re.compile(r'HÜSEYIN\s+ZORKUN\s*[/-]?\s*HATAY\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Tamamen büyük harf
-                re.compile(r'Hᴜ̈SᴇYİN\s+Zᴏʀᴋᴜɴ\s*[/\s-]*\s*HATAY\s*[-–/]?\s*TEKHA', re.IGNORECASE),  # Özel karakter formatı
-                re.compile(r'H[ᴜüÜ][^\s]*S[ᴇeE][^\s]*Y[İiI][^\s]*N\s+Z[ᴏoO]R[ᴋkK][ᴜuU][ɴnN]\s*[/\s-]*\s*HATAY\s*[-–/]?\s*TEKHA', re.IGNORECASE),  # Unicode ve karışık karakterler
-                re.compile(r'HUSEYIN\s+ZORKUN\s*[/\s-]*\s*HATAY\s*[-–/]?\s*TEKHA', re.IGNORECASE),  # Türkçe karakter olmadan
-                re.compile(r'Hüseyin\s+Zorkun', re.IGNORECASE),  # Sadece isim
-                re.compile(r'HÜSEYIN\s+ZORKUN', re.IGNORECASE),  # Sadece isim büyük harfle
-                re.compile(r'Hᴜ̈SᴇYİN\s+Zᴏʀᴋᴜɴ', re.IGNORECASE),  # Sadece isim özel karakterle
-            ]
-            
-            # Burak Birol özel patternları
-            burak_birol_patterns = [
-                re.compile(r'Burak\s+Birol\s*[/-]?\s*[^/\n]*\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Normal yazım
-                re.compile(r'BURAK\s+BIROL\s*[/-]?\s*[^/\n]*\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Tamamen büyük harf
-                re.compile(r'Burak\s+BİROL\s*[–\-/]?\s*BURSA\s*[–\-/]?\s*TEKHA', re.IGNORECASE),  # Türkçe karakter formatı
-                re.compile(r'BURAK\s+BİROL\s*[–\-/]?\s*BURSA\s*[–\-/]?\s*TEKHA', re.IGNORECASE),  # Tamamen büyük harf Türkçe
-                re.compile(r'Burak\s+BİROL\s*–\s*BURSA\s*/\s*TEKHA', re.IGNORECASE),  # Tam format eşleşmesi
-                re.compile(r'BURAK\s+BİROL\s*–\s*BURSA\s*/\s*TEKHA', re.IGNORECASE),  # Tam format büyük harf
-                re.compile(r'Burak\s+B[İiI]ROL\s*[–\-/]?\s*[A-ZÇĞİÖŞÜa-zçğıöşü]+\s*[–\-/]?\s*TEKHA', re.IGNORECASE),  # Esnek karakter eşleşmesi
-                re.compile(r'BURAK\s+B[İiI]ROL\s*[–\-/]?\s*[A-ZÇĞİÖŞÜa-zçğıöşü]+\s*[–\-/]?\s*TEKHA', re.IGNORECASE),  # Esnek büyük harf
-                re.compile(r'Burak\s+Birol', re.IGNORECASE),  # Sadece isim
-                re.compile(r'Burak\s+BİROL', re.IGNORECASE),  # Sadece isim Türkçe karakter
-                re.compile(r'BURAK\s+BİROL', re.IGNORECASE),  # Sadece isim büyük harf Türkçe
-            ]
-            
-            # Hüseyin Polattimur özel patternları
-            huseyin_polattimur_patterns = [
-                re.compile(r'Hüseyin\s+Polattimur\s*[/-]?\s*Kocaeli\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Normal yazım
-                re.compile(r'HÜSEYIN\s+POLATTIMUR\s*[/-]?\s*KOCAELI\s*[-/]?\s*TEKHA', re.IGNORECASE),  # Tamamen büyük harf
-                re.compile(r'Hüseyin\s+Polattimur', re.IGNORECASE),  # Sadece isim
-                re.compile(r'HÜSEYIN\s+POLATTIMUR', re.IGNORECASE),  # Sadece isim büyük harfle
-            ]
-            
             # 0. YENİ: Başlık ve alt başlıklarda yazar bilgisi kontrolü - haber başlıklarında yazar bilgisi olabilir
             for header in cleaned_element.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
                 if header.text:

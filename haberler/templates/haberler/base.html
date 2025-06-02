@@ -746,6 +746,70 @@
                 display: none !important;
             }
         }
+
+        /* Dropdown Menu Stilleri */
+        .navbar-custom .dropdown-menu-custom {
+            background-color: var(--primary-color);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            padding: 8px 0;
+            margin-top: 5px;
+            min-width: 200px;
+        }
+
+        .navbar-custom .dropdown-item {
+            color: var(--secondary-color);
+            font-weight: 500;
+            padding: 8px 20px;
+            transition: all 0.3s ease;
+            border: none;
+            background: none;
+        }
+
+        .navbar-custom .dropdown-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--secondary-color);
+            transform: translateX(5px);
+        }
+
+        .navbar-custom .dropdown-item.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+
+        .navbar-custom .dropdown-toggle::after {
+            color: var(--secondary-color);
+            margin-left: 0.5rem;
+            vertical-align: 0.1em;
+            transition: transform 0.3s ease;
+            display: none;
+        }
+
+        .navbar-custom .dropdown-toggle[aria-expanded="true"]::after {
+            transform: rotate(180deg);
+        }
+
+        .navbar-custom .dropdown-toggle:hover::after {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Dropdown'un mobilde de düzgün görünmesi için */
+        @media (max-width: 992px) {
+            .navbar-custom .dropdown-menu-custom {
+                background-color: rgba(1, 30, 90, 0.95);
+                border: none;
+                box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+                margin-top: 0;
+                border-radius: 0;
+            }
+
+            .navbar-custom .dropdown-item:hover {
+                transform: none;
+                background-color: rgba(255, 255, 255, 0.15);
+            }
+        }
     </style>
 </head>
 
@@ -769,8 +833,44 @@
                         <a class="nav-link {% if request.path == '/' %}active{% endif %}"
                             href="{% url 'ana_sayfa' %}">Ana Sayfa</a>
                     </li>
+
+                    <!-- Desktop: Ana kategoriler -->
                     {% for kategori in kategoriler %}
-                    <li class="nav-item">
+                    {% if kategori.slug in 'genel,dunya,ekonomi,asayis,siyaset,gundem' %}
+                    <li class="nav-item d-none d-lg-block">
+                        <a class="nav-link {% if request.resolver_match.kwargs.kategori_slug == kategori.slug %}active{% endif %}"
+                            href="{% url 'kategori_haberleri' kategori_slug=kategori.slug %}">
+                            {{ kategori.ad }}
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    <!-- Desktop: Diğer Kategoriler Dropdown -->
+                    {% if kategoriler|length > 6 %}
+                    <li class="nav-item dropdown d-none d-lg-block">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            Diğer Kategoriler
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-custom">
+                            {% for kategori in kategoriler %}
+                            {% if kategori.slug not in 'genel,dunya,ekonomi,asayis,siyaset,gundem' %}
+                            <li>
+                                <a class="dropdown-item {% if request.resolver_match.kwargs.kategori_slug == kategori.slug %}active{% endif %}"
+                                    href="{% url 'kategori_haberleri' kategori_slug=kategori.slug %}">
+                                    {{ kategori.ad }}
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    {% endif %}
+
+                    <!-- Mobile: Tüm kategoriler normal şekilde -->
+                    {% for kategori in kategoriler %}
+                    <li class="nav-item d-lg-none">
                         <a class="nav-link {% if request.resolver_match.kwargs.kategori_slug == kategori.slug %}active{% endif %}"
                             href="{% url 'kategori_haberleri' kategori_slug=kategori.slug %}">
                             {{ kategori.ad }}
