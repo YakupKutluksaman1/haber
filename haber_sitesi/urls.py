@@ -35,7 +35,7 @@ urlpatterns = [
     # Uygulamanın ana URL'leri
     path('', include('haberler.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
-    path('favicon.ico', RedirectView.as_view(url='/static/images/favicon.ico')),
+    path('favicon.ico', RedirectView.as_view(url='/static/images/favicon_oz_circle.ico')),
 ]
 
 if settings.DEBUG:

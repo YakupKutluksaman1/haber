@@ -31,7 +31,9 @@
     </div>
 
     <!-- Üst Reklam Alanı -->
+    {% comment %}
     {% include 'haberler/includes/ads.html' with position="top" %}
+    {% endcomment %}
 
     <!-- Son 10 Haber Slider -->
     <div class="row mb-4">
@@ -186,7 +188,9 @@
     </div>
 
     <!-- Orta Reklam Alanı -->
+    {% comment %}
     {% include 'haberler/includes/ads.html' with position="middle" %}
+    {% endcomment %}
 
     <!-- Haber Listesi -->
     <div class="row">
@@ -229,21 +233,27 @@
         </div>
         {% if forloop.counter|divisibleby:3 and not forloop.last %}
         <!-- Masaüstünde her 3 haberden sonra reklam -->
+        {% comment %}
         <div class="col-12 my-3 d-none d-md-block">
             {% include 'haberler/includes/ads.html' with position="in_content" ad_number=forloop.counter %}
         </div>
+        {% endcomment %}
         {% endif %}
         {% if forloop.counter|divisibleby:4 and not forloop.last %}
         <!-- Mobilde her 4 haberden sonra reklam -->
+        {% comment %}
         <div class="col-12 my-3 d-md-none">
             {% include 'haberler/includes/ads.html' with position="in_content" ad_number=forloop.counter %}
         </div>
+        {% endcomment %}
         {% endif %}
         {% endfor %}
     </div>
 
     <!-- Alt Reklam Alanı -->
+    {% comment %}
     {% include 'haberler/includes/ads.html' with position="bottom" %}
+    {% endcomment %}
 
     <!-- Sayfalama -->
     {% if haberler.paginator.num_pages > 1 %}

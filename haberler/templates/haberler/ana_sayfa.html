@@ -65,7 +65,9 @@ haberleri,
 
 <div class="container mt-4">
     <!-- Üst Reklam Alanı -->
+    {% comment %}
     {% include 'haberler/includes/ads.html' with position="top" %}
+    {% endcomment %}
 
     <!-- Son Dakika Haber Bandı -->
     <div class="breaking-news-container mb-4 son-dakika-container">
@@ -505,7 +507,9 @@ haberleri,
 {% endcomment %}
 
 <!-- Haberler Öncesi Reklam Alanı -->
+{% comment %}
 {% include 'haberler/includes/ads.html' with position="middle" %}
+{% endcomment %}
 
 <!-- Haberler Başlığı -->
 <div class="row mb-4">
@@ -535,7 +539,9 @@ haberleri,
 </div>
 
 <!-- Sayfalama Öncesi Reklam Alanı -->
+{% comment %}
 {% include 'haberler/includes/ads.html' with position="bottom" %}
+{% endcomment %}
 
 {% if haberler.has_next %}
 <div class="row mt-4" id="loading-container">

@@ -282,6 +282,11 @@ class Command(BaseCommand):
                 if tag.has_attr('class'):
                     del tag['class']
         
+        # Sadece nokta olan <a> etiketlerini düz metne çevir (link özelliğini kaldır)
+        for a in cleaned_element.find_all('a'):
+            if a.get_text(strip=True) == '.':
+                a.unwrap()
+        
         # Sadece içerik divini döndür, diğer etiketleri atla
         if cleaned_element.body:
             return cleaned_element.body

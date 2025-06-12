@@ -29,15 +29,19 @@
 </div>
 {% if forloop.counter|divisibleby:3 and not forloop.last %}
 <!-- Masaüstünde her 3 haberden sonra reklam -->
+{% comment %}
 <div class="col-12 my-3 d-none d-md-block">
     {% include 'haberler/includes/ads.html' with position="in_content" ad_number=forloop.counter %}
 </div>
+{% endcomment %}
 {% endif %}
 {% if forloop.counter|divisibleby:4 and not forloop.last %}
 <!-- Mobilde her 4 haberden sonra reklam -->
+{% comment %}
 <div class="col-12 my-3 d-md-none">
     {% include 'haberler/includes/ads.html' with position="in_content" ad_number=forloop.counter %}
 </div>
+{% endcomment %}
 {% endif %}
 {% if forloop.counter|divisibleby:6 and not forloop.last %}
 <div class="col-12 mb-4 mt-2">
